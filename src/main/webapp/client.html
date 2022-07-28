@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<title>Tomcat WebSocket</title>
+</head>
+
+<body>
+	<form>
+		<div id="currentuser"></div>
+		<div id="status"></div>
+		<label for="to">Destinatario</label> <input id="to" type="text">
+		<br> <label for="content">Mensaje</label> <input id="content"
+			type="text"> <br> <input onclick="wsSendMessage();"
+			value="Enviar" type="button"> <input
+			onclick="wsCloseConnection();" value="Desconectar" type="button">
+	</form>
+	<br>
+	<div id="contenedor1"></div>
+	<script type="text/javascript">
+        var payload = localStorage.getItem("payload");
+        if (payload == null)
+            location.href = "login.html";
+        
+        /* var payload = {
+            "id": "2f3f7464-6621-4d12-8628-705475c96dad",
+            "token": "ef6a5125-6772-42de-807e-fad91e515d74"
+        } */
+        var user = JSON.parse(payload);
+        var webSocket = new WebSocket("ws://192.168.1.11:8080/ChatServer/Server/{" + payload + "}");
+        var mainCont = document.getElementById("contenedor1");
+        var content = document.getElementById("content");
+        var to = document.getElementById("to");
+        webSocket.onopen = function () { wsOpen(); };
+        webSocket.onmessage = function (message) { wsGetMessage(message); };
+        webSocket.onclose = function (message) { wsClose(message); };
+        webSocket.onerror = function (message) { wsError(message); };
+       
+        function wsOpen() {
+            document.getElementById("currentuser").innerHTML = user.user;
+            document.getElementById("status").innerHTML = "Connected";
+        }
+
+        function wsSendMessage(x) {
+            message = {type: "TEXT",
+            			id: uuidv4(),
+            			from : user.user,
+                        to : to.value,
+                        content : content.value
+                    };
+            webSocket.send(JSON.stringify(message));
+            const newmess = document.createElement("div");
+            newmess.id = message.id;
+            newmess.style.backgroundColor = "lightgreen";
+            newmess.innerHTML = "To: " + message.to;
+            newmess.innerHTML += "<p>";
+            newmess.innerHTML += message.content;
+            mainCont.appendChild(newmess);
+        }
+
+        function wsCloseConnection() {
+            webSocket.close();
+            location.href = "login.html";
+        }
+        function wsGetMessage(x) {
+            message = JSON.parse(x.data);
+            const newmess = document.createElement("div");
+            if (message.type == "TEXT"){
+            	const newmess = document.createElement("div");
+            	newmess.style.backgroundColor = "cyan";
+            	newmess.innerHTML = "From: " + message.from;
+            	newmess.innerHTML += "<p>";
+            	newmess.innerHTML += message.content;
+            	mainCont.appendChild(newmess);
+            } else if (message.type == "CONTROL") {
+            	if (message.code == "OK"){
+            		var el = document.getElementById(message.id);
+            		el.innerHTML += "<p>Recibido";
+            	} else {
+            		const newmess = document.createElement("div");
+                	newmess.style.backgroundColor = "lightred";
+                	newmess.innerHTML = "ERROR: " + message.code;
+                	mainCont.appendChild(newmess);
+            	}
+            }
+        }
+        
+        function wsClose(message) {
+            echoText = "Disconnect ... \n";
+        }
+
+        function wsError(message) {
+            echoText = "Error ... \n" + message;
+        }
+        
+        function uuidv4() {
+        	return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+        	    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+          );
+        }
+    </script>
+</body>
+
+</html>
