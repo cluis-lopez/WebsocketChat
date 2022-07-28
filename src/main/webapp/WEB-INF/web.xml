@@ -4,4 +4,14 @@
 
 <web-app>
   <display-name>Archetype Created Web Application</display-name>
+  <servlet>
+  	<servlet-name>UserData</servlet-name>
+  	<display-name>UserData</display-name>
+  	<description></description>
+  	<servlet-class>com.clopez.chat.UserData</servlet-class>
+  </servlet>
+  <servlet-mapping>
+  	<servlet-name>UserData</servlet-name>
+  	<url-pattern>/UserData</url-pattern>
+  </servlet-mapping>
 </web-app>

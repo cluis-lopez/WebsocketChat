@@ -23,10 +23,6 @@
         if (payload == null)
             location.href = "login.html";
         
-        /* var payload = {
-            "id": "2f3f7464-6621-4d12-8628-705475c96dad",
-            "token": "ef6a5125-6772-42de-807e-fad91e515d74"
-        } */
         var user = JSON.parse(payload);
         var webSocket = new WebSocket("ws://192.168.1.11:8080/ChatServer/Server/{" + payload + "}");
         var mainCont = document.getElementById("contenedor1");

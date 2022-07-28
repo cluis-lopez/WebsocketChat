@@ -3,6 +3,7 @@ package com.clopez.chat;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.websocket.OnClose;
@@ -13,6 +14,9 @@ import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
+import com.clopez.chat.datamgnt.Message;
+import com.clopez.chat.datamgnt.OffLineDatabase;
+import com.clopez.chat.datamgnt.OffMessage;
 import com.clopez.chat.datamgnt.User;
 import com.clopez.chat.datamgnt.UserDatabase;
 import com.google.gson.Gson;
@@ -24,12 +28,14 @@ import com.google.gson.reflect.TypeToken;
 @ServerEndpoint(value = "/Server/{payload}")
 public class Server {
 	private static Type typeUser = new TypeToken<HashMap<String, User>>() {}.getType();
+	private static Type typeOffline = new TypeToken<HashMap<String, OffMessage>>() {}.getType();
     private static Map<String, Session> sessions = new HashMap<String, Session>();
     private Map<String, String> payload;
     private Type typePayload = new TypeToken<HashMap<String, String>>() {}.getType();
     private final TypeAdapter<JsonElement> strictAdapter = new Gson().getAdapter(JsonElement.class);
     private Gson gson = new Gson();
-    private static UserDatabase db = new UserDatabase("usersdb", typeUser);
+    private static UserDatabase userdb = new UserDatabase("usersdb", typeUser);
+    private static OffLineDatabase offdb = new OffLineDatabase("offlinedb", typeOffline);
     private User user;
 
     @OnOpen
@@ -37,13 +43,23 @@ public class Server {
         System.out.println("Open Connection ..." + session.getId() + " Payload: " + pl);
         if (isValidPayload(pl)) {
             payload = gson.fromJson(pl, typePayload);
-            User u = db.findById(payload.get("id"));
+            User u = userdb.findById(payload.get("id"));
             if (u != null && payload.get("token").equals(u.getToken())) {
                 // Usuario Válido
                 sessions.put(u.getName(), session);
                 this.user = u;
                 System.out.println("Usuario " + u.getName() + " Conectado");
                 System.out.println("En el sistema hay " + sessions.size() + " usuarios conectados");
+                List<Message> l = offdb.messagesOfUser(u);
+                if (l.size()>0) {
+                	System.out.println("El usuario " + u.getName()+" tiene "+l.size()+" mensajes pendientes");
+                	for (Message m: l)
+                		if (m.send(session))
+                			System.out.println("Despachado mensaje " + m.getId());
+                	int i = offdb.deleteDeliveredForUser(u);
+                	if (i<l.size())
+                		System.out.println("Warning... quedan " + (l.size() - i) + " mensajes por despachar");
+                }
             } else {
                 System.out.println("Identificación Incorrecta " + pl);
                 try {
@@ -64,7 +80,8 @@ public class Server {
 
     @OnClose
     public void onClose() {
-    	sessions.remove(user.getName());
+    	if (sessions.containsKey(user.getName()))
+    		sessions.remove(user.getName());
         System.out.println("Closing Connection ...");
     }
 
@@ -81,22 +98,21 @@ public class Server {
         } else {
             payload = gson.fromJson(pl, typePayload);
             Session sid = isConnectedUser(payload.get("to"));
+            user.updateRecent(payload.get("to"));
+            Message m = new Message(payload);
             if (sid != null){ //El usuario "to" está conectado
-                try {
-                	Map<String, String> message = new HashMap<>();
-                    message.put("type", "TEXT");
-                    message.put("id", payload.get("id"));
-                    message.put("to", payload.get("to"));
-                    message.put("from", payload.get("from"));
-                    message.put("content", payload.get("content"));
-                    sid.getBasicRemote().sendText(gson.toJson(message));
-                    response.put("id", payload.get("id"));
-                    System.out.println("Enviado mensaje al usuario: " + message.get("to") + " SesionId: "+ sid.getId() + " desde el usuario " + message.get("from"));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            	if (m.send(sid)) {
+            		response.put("id", payload.get("id"));
+                    System.out.println("Enviado mensaje al usuario: " + m.getTo() + " SesionId: "+ sid.getId() + " desde el usuario " + m.getFrom());
+            	} else {
+            		System.out.println("Error al enviar el mensaje");
+            	}
+            } else if (isValidUser(payload.get("to"))){
+            	//User exists but is not connected
+                offdb.addMessage(m);
+                System.out.println("Mensaje añadido a la cola de " + payload.get("to"));
             } else {
-                response.put("code", "Invalid or non-connected user");
+            	response.put("code", "Invalid or non-connected user");
             }
         }
         System.out.println("Devuelto al remitente : " + gson.toJson(response));
@@ -106,6 +122,13 @@ public class Server {
     @OnError
     public void onError(Throwable e) {
         e.printStackTrace();
+    }
+    
+    private boolean isValidUser(String name) {
+    	if (userdb.findUserByName(name) != null)
+    		return true;
+    	else
+    		return false;
     }
 
     private boolean isValidJson(String json) {

@@ -53,6 +53,13 @@ public class Message {
 		return to;
 	}
 	
+	public String getFrom() {
+		return from;
+	}
+	public String getId() {
+		return mid;
+	}
+	
 	public boolean isDelivered() {
 		return this.delivered;
 	}
