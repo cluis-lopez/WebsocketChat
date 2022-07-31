@@ -19,7 +19,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
 
-@WebServlet("/UserData")
+@WebServlet("/Userdata")
 public class UserData extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	Type type = new TypeToken<HashMap<String, User>>() {}.getType();
@@ -41,7 +41,7 @@ public class UserData extends HttpServlet {
         		if (maxNumber > 25)
         			maxNumber = 25;
         	} catch (NumberFormatException e) {
-        		System.out.println("Parámetro inválido");
+        		System.out.println("Parámetro inválido o no especificado");
         	}
         	String [] showUsers = new String[maxNumber];
         	String [] temp = user.getRecentChats();

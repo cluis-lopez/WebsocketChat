@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="author" content="Muhamad Nauval Azhar">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description"
+	content="This is a login page template based on Bootstrap 5">
+<title>Tomcat WebSocket Chat</title>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css"
+	rel="stylesheet"
+	integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl"
+	crossorigin="anonymous">
+</head>
+
+<body>
+	<section class="h-100">
+		<div class="container h-100">
+			<div class="row justify-content-sm-center h-100">
+				<div class="col-xxl-4 col-xl-5 col-lg-5 col-md-7 col-sm-9">
+					<div class="card shadow-lg">
+						<div class="card-body p-3">
+							<h1 class="fs-4 card-title fw-bold mb-4">Chats Recientes</h1>
+						</div>
+						<div class="mb-3">
+							<div class="row height d-flex justify-content-center align-items-center">
+								<div class="col-10">
+									<div class="d-flex">
+										<input type="text" class="form-control" placeholder="Busca usuarios o grupos">
+										<button class="btn btn-primary">Search</button>
+									</div>
+								</div>
+								<div class="col-10">
+									<ul class="list-group" id="recentChats">
+  										<li class="list-group-item">An item</li>
+  										<li class="list-group-item">A second item</li>
+  										<li class="list-group-item">A third item</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+						<div class="card-footer py-3 border-0">
+							<div class="text-center">
+								<a href="register.html" class="text-dark">Cargar m&aacute;s></a>
+								
+							</div>
+						</div>
+					</div>
+					<div class="text-center mt-5 text-muted">Copyright &copy;
+						2022 &mdash; Carlos L. Lopez</div>
+				</div>
+			</div>
+		</div>
+	</section>
+	<script>
+		'use strict';
+		window.addEventListener(
+						'load',
+						function() {
+							// Initialize some variables
+
+							//Initialize the xhttp request
+							var xhttp = new XMLHttpRequest();
+							xhttp.open("GET", "/ChatServer/Userdata", true);
+							xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+							xhttp.setRequestHeader("Accept" , "application/json");
+							xhttp.onload = function() {
+								if (this.readyState == 4 && this.status == 200) {
+									var resp = JSON.parse(this.responseText);
+									if (resp.code == "OK") {
+										var recentChats = resp.recentChats;
+										var lista = document.getElementById("recentChats");
+										for (s in recentChats){
+											l = document.createElement("li");
+											l.setAttribute("id", "element"+x);
+											l.appendChild(document.createTextNode(s));
+											lista.appendChild(l);
+										}
+									} else {
+										console.log(resp.code);
+										document.getElementById("warningtext").innerHTML = resp.code;
+										myModal.show();
+									}
+								}
+							};
+
+							xhttp.onerror = function(e) {
+								console.log("Error Unresponsive Domain ");
+							};
+							
+							xhttp.send("user="+ document.getElementById("name").value
+									  + "&password=" + document.getElementById("password").value);
+					});
+		</script>
+</body>
+</html>

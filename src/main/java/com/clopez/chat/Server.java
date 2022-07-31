@@ -98,11 +98,11 @@ public class Server {
         } else {
             payload = gson.fromJson(pl, typePayload);
             Session sid = isConnectedUser(payload.get("to"));
-            user.updateRecent(payload.get("to"));
             Message m = new Message(payload);
             if (sid != null){ //El usuario "to" está conectado
             	if (m.send(sid)) {
             		response.put("id", payload.get("id"));
+            		user.updateRecent(payload.get("to"));
                     System.out.println("Enviado mensaje al usuario: " + m.getTo() + " SesionId: "+ sid.getId() + " desde el usuario " + m.getFrom());
             	} else {
             		System.out.println("Error al enviar el mensaje");
@@ -110,6 +110,7 @@ public class Server {
             } else if (isValidUser(payload.get("to"))){
             	//User exists but is not connected
                 offdb.addMessage(m);
+                user.updateRecent(payload.get("to"));
                 System.out.println("Mensaje añadido a la cola de " + payload.get("to"));
             } else {
             	response.put("code", "Invalid or non-connected user");
@@ -163,7 +164,6 @@ public class Server {
 
     private Session isConnectedUser(String uname){
         for (String u : sessions.keySet()){
-            System.out.println("Conectado : " + u );
             if (u.equals(uname))
                 return sessions.get(u);
         }

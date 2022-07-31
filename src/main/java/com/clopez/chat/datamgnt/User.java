@@ -3,7 +3,10 @@ package com.clopez.chat.datamgnt;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 public class User {
@@ -13,12 +16,13 @@ public class User {
     private String token;
     private Date token_valid_upTo;
     private String[] recentChats;
-    private static int numChats = 25;
+    private static int numChats =5;
 
     public User(String name, String password) throws IllegalArgumentException {
         this.name = name;
         this.id = UUID.randomUUID().toString();
         this.recentChats = new String[numChats];
+        Arrays.fill(recentChats, "");
         if (! isPasswordValid(password))
             throw new IllegalArgumentException("Invalid Password");
         else 
@@ -70,12 +74,18 @@ public class User {
     }
     
     public void updateRecent(String chatName) {
-    	String[] temp = new String[numChats];
-    	for (int i=0; i<numChats-1; i++) {
-    		temp[i+1] = recentChats[i];
+    	if (! chatName.equals(recentChats[0])) {
+    		String[] temp = new String[numChats];
+    		Arrays.fill(temp, "");
+    		temp[0] = chatName;
+    		for (int i=0; i<recentChats.length-1; i++) {
+    			if (recentChats[i].equals(chatName))
+    				continue;
+    			temp[i+1] = recentChats[i];
+    		}
+    		recentChats = temp;
     	}
-    	recentChats = temp;
-    	recentChats[0] = chatName;
+    	return;
     }
 
     private boolean isPasswordValid(String password){
