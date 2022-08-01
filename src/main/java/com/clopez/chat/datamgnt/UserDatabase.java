@@ -1,6 +1,8 @@
 package com.clopez.chat.datamgnt;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class UserDatabase extends Database<User> {
@@ -25,5 +27,16 @@ public class UserDatabase extends Database<User> {
                 return u;
         }
         return null;
+    }
+    
+    public List<User> findUserByWildCar(String wc) {
+    	List<User> lu = new ArrayList<>();
+    	User u;
+    	for (String id : data.keySet()) {
+    		u = data.get(id);
+    		if (u.getName().contains(wc))
+    			lu.add(u);
+    	}
+    	return lu;
     }
 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -15,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.clopez.chat.datamgnt.User;
 import com.clopez.chat.datamgnt.UserDatabase;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
@@ -29,12 +31,15 @@ public class UserData extends HttpServlet {
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String userid = req.getParameter("id");
         String token = req.getParameter("token");
-        Map<String, String> response = new HashMap<String, String>();
+        String command = req.getParameter("command");
+        String searchChat = req.getParameter("searchChat");
+        JsonObject job = new JsonObject();
         String recentChats;
         
         User user = userdb.findById(userid);
-        if (user != null && token.equals(user.getToken()) && user.isTokenValid()) {
-        	response.put("code", "OK");
+
+        if (user != null && token.equals(user.getToken()) && user.isTokenValid() && command != null) {
+        	job.addProperty("code", "OK");
         	int maxNumber = 5;
         	try {
         		maxNumber = Integer.parseInt(req.getParameter("maxNumber"));
@@ -43,21 +48,33 @@ public class UserData extends HttpServlet {
         	} catch (NumberFormatException e) {
         		System.out.println("Parámetro inválido o no especificado");
         	}
-        	String [] showUsers = new String[maxNumber];
-        	String [] temp = user.getRecentChats();
-        	for (int i=0; i<maxNumber; i++) {
-        		showUsers[i] = temp[i];
+        	
+        	if (command.equals("lastChats")) {
+        		JsonArray jarr = new JsonArray();
+        		String [] temp = user.getRecentChats();
+        		int min = (maxNumber<temp.length? maxNumber: temp.length);
+        		for (int i=0; i<min; i++)
+        			jarr.add(temp[i]);
+        		job.add("chatList", jarr);
+        	} else if (command.equals("search") && searchChat!= null && ! searchChat.equals("")) {
+        		List<User> lu = userdb.findUserByWildCar(searchChat);
+        		System.out.println("Encontrados "+lu.size()+" usuarios/grupos: " + lu.toString());
+        		JsonArray jarr = new JsonArray();
+        		int min = (maxNumber<lu.size()? maxNumber: lu.size());
+        		for (int i=0; i<min; i++)
+        			jarr.add(lu.get(i).getName());
+        		job.add("chatList", jarr);
+        	} else {
+        		job.addProperty("code", "Invalid coomand");
         	}
-        	recentChats = gs.toJson(temp);
-        	response.put("recentChats", recentChats);
         } else {
-        	response.put("code", "Invalid user or token");
+        	job.addProperty("code", "Invalid user or token");
         }
         
         
         resp.setContentType("application/json");
         PrintWriter pw = resp.getWriter();
-        pw.println(gs.toJson(response));
+        pw.println(job);
         pw.close();
 	}
 

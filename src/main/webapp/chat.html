@@ -27,22 +27,19 @@
 							<div class="row height d-flex justify-content-center align-items-center">
 								<div class="col-10">
 									<div class="d-flex">
-										<input type="text" class="form-control" placeholder="Busca usuarios o grupos">
-										<button class="btn btn-primary">Search</button>
+										<input type="text" class="form-control" placeholder="Busca usuarios o grupos" id="searchBox">
+										<button class="btn btn-primary" id="searchButton">Search</button>
 									</div>
 								</div>
 								<div class="col-10">
-									<ul class="list-group" id="recentChats">
-  										<li class="list-group-item">An item</li>
-  										<li class="list-group-item">A second item</li>
-  										<li class="list-group-item">A third item</li>
+									<ul class="list-group" id="chatList">
 									</ul>
 								</div>
 							</div>
 						</div>
 						<div class="card-footer py-3 border-0">
 							<div class="text-center">
-								<a href="register.html" class="text-dark">Cargar m&aacute;s></a>
+								<a href="#" class="text-dark" id="reload">Cargar &uacute;ltimos chats</a>
 								
 							</div>
 						</div>
@@ -53,30 +50,33 @@
 			</div>
 		</div>
 	</section>
+	<section class="h-100">
+	</section>
 	<script>
 		'use strict';
 		window.addEventListener(
 						'load',
 						function() {
-							// Initialize some variables
+							// Initialize app variables
+							var payload = localStorage.getItem("payload");
+        					if (payload == null)
+            					location.href = "login.html";
+        					var user = JSON.parse(payload);
+        					document.getElementById("searchButton").addEventListener("click", searchChats);
+        					document.getElementById("reload").addEventListener("click", reload);
 
 							//Initialize the xhttp request
 							var xhttp = new XMLHttpRequest();
-							xhttp.open("GET", "/ChatServer/Userdata", true);
+							xhttp.open("GET", "/ChatServer/Userdata?id="+ user.id
+									+ "&token=" + user.token + "&maxNumber=5&command=lastChats", true);
 							xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 							xhttp.setRequestHeader("Accept" , "application/json");
 							xhttp.onload = function() {
 								if (this.readyState == 4 && this.status == 200) {
 									var resp = JSON.parse(this.responseText);
 									if (resp.code == "OK") {
-										var recentChats = resp.recentChats;
-										var lista = document.getElementById("recentChats");
-										for (s in recentChats){
-											l = document.createElement("li");
-											l.setAttribute("id", "element"+x);
-											l.appendChild(document.createTextNode(s));
-											lista.appendChild(l);
-										}
+										var chats = resp.chatList;
+										recreateList(chats);
 									} else {
 										console.log(resp.code);
 										document.getElementById("warningtext").innerHTML = resp.code;
@@ -89,8 +89,45 @@
 								console.log("Error Unresponsive Domain ");
 							};
 							
-							xhttp.send("user="+ document.getElementById("name").value
-									  + "&password=" + document.getElementById("password").value);
+							xhttp.send();
+							
+							function reload(){
+								xhttp.open("GET", "/ChatServer/Userdata?id="+ user.id
+										+ "&token=" + user.token + "&maxNumber=5&command=lastChats", true);
+								xhttp.send();
+							}
+							
+							function searchChats(){
+								var searchText = document.getElementById("searchBox").value;
+								if (searchText == "")
+									return;
+								xhttp.open("GET", "/ChatServer/Userdata?id="+ user.id
+										+ "&token=" + user.token + "&maxNumber=5&command=search&searchChat=" + searchText, true);
+								xhttp.send();
+								
+							};
+							
+							function recreateList(elements){
+								var lista = document.getElementById("chatList");
+								while (lista.firstChild){
+									lista.removeChild(lista.firstChild );
+								}
+									
+								for (var s in elements){
+									if (elements[s] == "")
+										continue;
+									var l = document.createElement("li");
+									l.setAttribute("id", "element_" + elements[s]);
+									l.classList.add("list-group-item");
+									l.appendChild(document.createTextNode(elements[s]));
+									lista.appendChild(l);
+									l.addEventListener("click", chatWith, false);
+								}
+							}
+							
+							function chatWith(evt){
+								console.log("Chat with " + evt.currentTarget.id);
+							};
 					});
 		</script>
 </body>
