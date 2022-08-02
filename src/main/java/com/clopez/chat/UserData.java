@@ -5,7 +5,6 @@ import java.io.PrintWriter;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -15,7 +14,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.clopez.chat.datamgnt.User;
 import com.clopez.chat.datamgnt.UserDatabase;
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
@@ -24,9 +22,8 @@ import com.google.gson.reflect.TypeToken;
 @WebServlet("/Userdata")
 public class UserData extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	Type type = new TypeToken<HashMap<String, User>>() {}.getType();
-    UserDatabase userdb = new UserDatabase("usersdb", type);
-    Gson gs = new Gson();
+	private static Type type = new TypeToken<HashMap<String, User>>() {}.getType();
+    private static UserDatabase userdb = new UserDatabase("usersdb", type);
        
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String userid = req.getParameter("id");
@@ -34,7 +31,6 @@ public class UserData extends HttpServlet {
         String command = req.getParameter("command");
         String searchChat = req.getParameter("searchChat");
         JsonObject job = new JsonObject();
-        String recentChats;
         
         User user = userdb.findById(userid);
 
@@ -76,10 +72,6 @@ public class UserData extends HttpServlet {
         PrintWriter pw = resp.getWriter();
         pw.println(job);
         pw.close();
-	}
-
-	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		doGet(request, response);
 	}
 
 }
