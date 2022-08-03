@@ -43,6 +43,7 @@
             			id: uuidv4(),
             			from : user.user,
                         to : to.value,
+                        createdAt : new Date().toISOString(),
                         content : content.value
                     };
             webSocket.send(JSON.stringify(message));

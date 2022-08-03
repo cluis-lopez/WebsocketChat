@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +79,16 @@ public class MessageDatabase {
 		return mapById.get(id);
 	}
 	
+	public List<Message> getChatById(int id, int number){
+		if (number >= mapById.get(id).size())
+			return mapById.get(id);
+		else {
+			Message[] chatMess = (Message[]) mapById.get(id).toArray();
+			return Arrays.asList(Arrays.copyOfRange(chatMess, chatMess.length-1-number, chatMess.length-1));
+		}
+	}
+		
+			
 	public List<Message> getPendingMessagesTo(String userTo){
 		List<Message> li = new ArrayList<>();
 		for (List<Message> temp : mapById.values())
@@ -109,6 +120,7 @@ public class MessageDatabase {
 	}
 	
 	private Path getLastFile() {
+		System.out.println("Usando el directorio " + MESSAGESDIR);
 		File ls[] = new File(MESSAGESDIR).listFiles();
 		return Paths.get(MESSAGESDIR + FILEPREFIX + getLastIndex(ls));
 	}
