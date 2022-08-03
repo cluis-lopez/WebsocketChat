@@ -15,7 +15,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 
-public class GroupDatabase extends Database<Group>{
+public class GroupDatabase extends SimpleJsonDatabase<Group>{
 	
 	public GroupDatabase (String filename, Type type) {
 		super (filename, type);

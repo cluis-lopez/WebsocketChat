@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class UserDatabase extends Database<User> {
+public class UserDatabase extends SimpleJsonDatabase<User> {
     
 	public UserDatabase(String filename, Type type) { 
     	super (filename, type);

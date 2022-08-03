@@ -14,11 +14,10 @@ import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
-import com.clopez.chat.datamgnt.Message;
-import com.clopez.chat.datamgnt.OffLineDatabase;
-import com.clopez.chat.datamgnt.OffMessage;
 import com.clopez.chat.datamgnt.User;
 import com.clopez.chat.datamgnt.UserDatabase;
+import com.clopez.chat.messages.Message;
+import com.clopez.chat.messages.MessageDatabase;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
@@ -28,14 +27,13 @@ import com.google.gson.reflect.TypeToken;
 @ServerEndpoint(value = "/Server/{payload}")
 public class Server {
 	private static Type typeUser = new TypeToken<HashMap<String, User>>() {}.getType();
-	private static Type typeOffline = new TypeToken<HashMap<String, OffMessage>>() {}.getType();
     private static Map<String, Session> sessions = new HashMap<String, Session>();
     private Map<String, String> payload;
     private Type typePayload = new TypeToken<HashMap<String, String>>() {}.getType();
     private final TypeAdapter<JsonElement> strictAdapter = new Gson().getAdapter(JsonElement.class);
     private Gson gson = new Gson();
     private static UserDatabase userdb = new UserDatabase("usersdb", typeUser);
-    private static OffLineDatabase offdb = new OffLineDatabase("offlinedb", typeOffline);
+    private static MessageDatabase messdb = new MessageDatabase();
     private User user;
 
     @OnOpen
@@ -50,15 +48,15 @@ public class Server {
                 this.user = u;
                 System.out.println("Usuario " + u.getName() + " Conectado");
                 System.out.println("En el sistema hay " + sessions.size() + " usuarios conectados");
-                List<Message> l = offdb.messagesOfUser(u);
-                if (l.size()>0) {
+                List<Message> l = messdb.getPendingMessagesTo(u.getName());
+                if (! l.isEmpty()) {
                 	System.out.println("El usuario " + u.getName()+" tiene "+l.size()+" mensajes pendientes");
-                	for (Message m: l)
+                	for (Message m: l) {
                 		if (m.send(session))
                 			System.out.println("Despachado mensaje " + m.getId());
-                	int i = offdb.deleteDeliveredForUser(u);
-                	if (i<l.size())
-                		System.out.println("Warning... quedan " + (l.size() - i) + " mensajes por despachar");
+                		else
+                			System.out.println("Fallo al enviar mensaje pendiente");
+                	}
                 }
             } else {
                 System.out.println("Identificación Incorrecta " + pl);
@@ -97,25 +95,36 @@ public class Server {
             response.put("code", "Invalid Message");
         } else {
             payload = gson.fromJson(pl, typePayload);
-            Session sid = isConnectedUser(payload.get("to"));
             Message m = new Message(payload);
-            if (sid != null){ //El usuario "to" está conectado
-            	if (m.send(sid)) {
-            		response.put("id", payload.get("id"));
-            		user.updateRecent(payload.get("to"));
-                    System.out.println("Enviado mensaje al usuario: " + m.getTo() + " SesionId: "+ sid.getId() + " desde el usuario " + m.getFrom());
-            	} else {
-            		System.out.println("Error al enviar el mensaje");
-            	}
-            } else if (isValidUser(payload.get("to"))){
-            	//User exists but is not connected
-                offdb.addMessage(m);
-                user.updateRecent(payload.get("to"));
-                System.out.println("Mensaje añadido a la cola de " + payload.get("to"));
+            
+            if (! isValidUser(payload.get("to"))){ //Usuario no registrado
+            	response.put("code", "Invalid user");
             } else {
-            	response.put("code", "Invalid or non-connected user");
+            	Session sid = isConnectedUser(payload.get("to"));
+            	if (sid != null) //Usuario conectado
+            		if (m.send(sid))
+            			response.put("id", payload.get("id"));
+            	
+            	user.updateRecent(payload.get("to"));
+            	if (user.needsUpdate())
+            		userdb.saveDatabase();
+            	messdb.addMessage(m);
+            	}
             }
-        }
+			/*
+			 * if (sid != null){ //El usuario "to" está conectado if (m.send(sid)) {
+			 * response.put("id", payload.get("id")); user.updateRecent(payload.get("to"));
+			 * if (user.needsUpdate()) userdb.saveDatabase();
+			 * System.out.println("Enviado mensaje al usuario: " + m.getTo() +
+			 * " SesionId: "+ sid.getId() + " desde el usuario " + m.getFrom()); } else {
+			 * System.out.println("Error al enviar el mensaje"); } } else if
+			 * (isValidUser(payload.get("to"))){ //User exists but is not connected
+			 * user.updateRecent(payload.get("to")); if (user.needsUpdate())
+			 * userdb.saveDatabase(); System.out.println("Mensaje añadido a la cola de " +
+			 * payload.get("to")); } else { response.put("code",
+			 * "Invalid or non-connected user"); }
+			 */
+  
         System.out.println("Devuelto al remitente : " + gson.toJson(response));
         return gson.toJson(response);
     }

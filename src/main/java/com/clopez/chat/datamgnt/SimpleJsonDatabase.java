@@ -13,16 +13,16 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 
-public abstract class Database <T> {
+public abstract class SimpleJsonDatabase <T> {
 	HashMap<String, T> data;
 	Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	String datafile;
 	
-	public Database(String filename, Type type) {
+	public SimpleJsonDatabase(String filename, Type type) {
 		data = new HashMap<>();
 		JsonReader reader;
 		this.datafile = filename;
-		System.out.println("Using: " + Database.class.getClassLoader().getResource(".").getPath());
+		System.out.println("Using: " + SimpleJsonDatabase.class.getClassLoader().getResource(".").getPath());
 		try {
 			reader = new JsonReader(new FileReader("webapps/" + filename));
 			//Type type = new TypeToken<HashMap<String, T>>() {}.getType();

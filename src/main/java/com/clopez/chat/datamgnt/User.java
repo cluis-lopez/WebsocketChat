@@ -16,7 +16,9 @@ public class User {
     private String token;
     private Date token_valid_upTo;
     private String[] recentChats;
-    private static int numChats =5;
+    private static int numChats = 5;
+    private int updates;
+    private static int maxUpdates = 10;
 
     public User(String name, String password) throws IllegalArgumentException {
         this.name = name;
@@ -29,6 +31,7 @@ public class User {
             this.password = encryptPassword(password);;
 
         generateToken(30);
+        this.updates = 0;
     }
 
     public String getId(){
@@ -84,8 +87,18 @@ public class User {
     			temp[i+1] = recentChats[i];
     		}
     		recentChats = temp;
+    		updates += 1;
     	}
     	return;
+    }
+    
+    public boolean needsUpdate() {
+    	if (updates >= maxUpdates) {
+    		updates = 0;
+    		return true;
+    	}
+    	else
+    		return false;
     }
 
     private boolean isPasswordValid(String password){
