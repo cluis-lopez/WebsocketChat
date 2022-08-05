@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="author" content="Muhamad Nauval Azhar">
+<meta name="author" content="Carlos Lopez">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description"
 	content="This is a login page template based on Bootstrap 5">
@@ -29,49 +29,57 @@
 		</div>
 		<nav class="navbar fixed-bottom navbar-light bg-light">
   			<div class="container-fluid" id="bottomBar">
-    			    <form class="d-flex justify-content-end">
+    			    <div class="d-flex justify-content-end">
       					<input class="form-control me-2 flex-grow-1" id="chatText" type="text" placeholder="Mensaje" aria-label="Mensaje">
       					<button class="btn btn-outline-success" type="submit" id="send">Enviar</button>
-    				</form>
+    				</div>
   			</div>
 		</nav>
 	</section>
 	<script>
 		'use strict';
 		window.addEventListener(
-						'load',
-						function() {
+				'load',
+				function() {
 							//Initialize app variables
 							var credentials = localStorage.getItem("credentials");
         					if (credentials == null)
             					location.href = "login.html";
         					var user = JSON.parse(credentials);
         					var chatTo = new URL(document.URL).searchParams.get('chatTo');
-        					if (chatTo == null || chatTo == "")
-        						location.href = "cahtlist.html";
+        					console.log("chateando con: " + chatTo);
+        					if (chatTo == null || chatTo == "" || chatTo == user.user)
+        						location.href = "chatlist.html";
         					
         					// Initialize UI variables and components
-        					document.getElementById("back").addEventListener("click", backToSelection);
+        					document.getElementById("back").addEventListener("click", backToChatList);
         					document.getElementById("send").addEventListener("click", wsSendMessage);
         					var mainChat = document.getElementById("mainChat");
         					var bottomBar = document.getElementById("bottomBar");
+        					var chatWith = document.getElementById("chatWith");
+        					chatWith.innerText = chatTo;
         					
         					//Initialize the Websocket client
-        					var webSocket = new WebSocket("ws://192.168.1.11:8080/ChatServer/Server/{" + credentials + "}");
-        					webSocket.onopen = function () { wsOpen(); };
-        					webSocket.onmessage = function (message) { wsGetMessage(message); };
-        					webSocket.onclose = function (message) { wsClose(message); };
-        					webSocket.onerror = function (message) { wsError(message); };
+        					var websocket = new WebSocket("ws://192.168.1.11:8080/ChatServer/Server/{" + credentials + "}");
+        					websocket.onopen = function () { wsOpen(); };
+        					websocket.onmessage = function (message) { wsGetMessage(message); };
+        					websocket.onclose = function (message) { wsCloseConnection(message); };
+        					websocket.onerror = function (message) { wsError(message); };
 													
 					        function wsOpen() {
 					            console.log(user.user + " está ahora conectado");
 					            bottomBar.style.background = "lightgreen";
 					        }
 					        
-					        function wsCloseConnection() {
+					        function wsCloseConnection(x) {
 					        	bottomBar.style.background = "white";
-					            webSocket.close();
+								console.log("Closing connection " + x);
+					            websocket.close();
 					            //location.href = "login.html";
+					        }
+ 					        
+					        function backToChatList(){
+					        	wsCloseConnection();
 					        }
 					        
 					        function wsGetMessage(x) {
@@ -135,8 +143,8 @@
 					            }
 					            console.log("Invalid message type received " + message);
 					        }
-					        
-					        function wsSendMessage(x) {
+					       					        
+					        function wsSendMessage () {
 					            var message = {type: "TEXT",
 					            			id: uuidv4(),
 					            			from : user.user,
@@ -146,6 +154,7 @@
 					                    };
 					            
 					            console.log("Enviando el mensaje: " + message);
+					            document.getElementById("chatText").value = "";
 
 								var newmess = document.createElement("div");
 								newmess.classList.add("d-flex");
@@ -159,7 +168,7 @@
 								l3.style.background="CornflowerBlue";
 								var l4 = document.createElement("h5");
 								l4.classList.add("card-title");
-								l4.innerText = message.to;
+								l4.innerText = message.to;movil?
 								var l5 = document.createElement("p");
 								l5.classList.add("card-text");
 								l5.innerText = message.content;
@@ -169,11 +178,11 @@
 								newmess.appendChild(l2);
 								mainChat.appendChild(newmess);
 								
-								webSocket.send(JSON.stringify(message));
+								websocket.send(JSON.stringify(message));
 					        }
 					        
-					        function wsClose(message) {
-					            console.log("Closing Websocket connection");
+ 					        function wsClose(message) {
+					            console.log("Closing Websocket connection " + message);
 					        }
 
 					        function wsError(message) {
@@ -185,7 +194,7 @@
 					        	    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
 					          );
 					        }
-					});
+				});
 		</script>
 </body>
 </html>

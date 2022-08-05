@@ -82,7 +82,7 @@ public class Server {
     public void onClose() {
     	if (sessions.containsKey(user.getName()))
     		sessions.remove(user.getName());
-        System.out.println("Closing Connection ...");
+        System.out.println("Closing Connection for " + user.getName());
     }
 
     @OnMessage
