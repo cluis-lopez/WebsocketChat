@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="author" content="Muhamad Nauval Azhar">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description"
+	content="This is a login page template based on Bootstrap 5">
+<title>Tomcat WebSocket Chat</title>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css"
+	rel="stylesheet"
+	integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl"
+	crossorigin="anonymous">
+</head>
+
+<body>
+	<section class="h-100" id="chatroom">
+		<nav class="navbar fixed-top navbar-light bg-light">
+  			<div class="container-fluid">
+    			<a class="navbar-brand" href="#" id="chatWith">N.A.</a>
+    			    <form class="d-flex">
+      					<button class="btn btn-outline-success" type="submit" id="back">Back</button>
+    				</form>
+  			</div>
+		</nav>
+		<div class="container" id="mainChat">
+
+		</div>
+		<nav class="navbar fixed-bottom navbar-light bg-light">
+  			<div class="container-fluid" id="bottomBar">
+    			    <form class="d-flex justify-content-end">
+      					<input class="form-control me-2 flex-grow-1" id="chatText" type="text" placeholder="Mensaje" aria-label="Mensaje">
+      					<button class="btn btn-outline-success" type="submit" id="send">Enviar</button>
+    				</form>
+  			</div>
+		</nav>
+	</section>
+	<script>
+		'use strict';
+		window.addEventListener(
+						'load',
+						function() {
+							//Initialize app variables
+							var credentials = localStorage.getItem("credentials");
+        					if (credentials == null)
+            					location.href = "login.html";
+        					var user = JSON.parse(credentials);
+        					var chatTo = new URL(document.URL).searchParams.get('chatTo');
+        					if (chatTo == null || chatTo == "")
+        						location.href = "cahtlist.html";
+        					
+        					// Initialize UI variables and components
+        					document.getElementById("back").addEventListener("click", backToSelection);
+        					document.getElementById("send").addEventListener("click", wsSendMessage);
+        					var mainChat = document.getElementById("mainChat");
+        					var bottomBar = document.getElementById("bottomBar");
+        					
+        					//Initialize the Websocket client
+        					var webSocket = new WebSocket("ws://192.168.1.11:8080/ChatServer/Server/{" + credentials + "}");
+        					webSocket.onopen = function () { wsOpen(); };
+        					webSocket.onmessage = function (message) { wsGetMessage(message); };
+        					webSocket.onclose = function (message) { wsClose(message); };
+        					webSocket.onerror = function (message) { wsError(message); };
+													
+					        function wsOpen() {
+					            console.log(user.user + " está ahora conectado");
+					            bottomBar.style.background = "lightgreen";
+					        }
+					        
+					        function wsCloseConnection() {
+					        	bottomBar.style.background = "white";
+					            webSocket.close();
+					            //location.href = "login.html";
+					        }
+					        
+					        function wsGetMessage(x) {
+					            var message = JSON.parse(x.data);
+					            console.log("Ha llegado el mensaje " + message);
+					            
+					            if (message.type == "TEXT"){
+										var newmess = document.createElement("div");
+										newmess.classList.add("d-flex");
+										newmess.id = message.id;
+					            		var l2 = document.createElement("div");
+										l2.classList.add("card");
+										l2.classList.add("w-75");
+										var l3 = document.createElement("div");
+										l3.classList.add("card-body");
+										l3.style.background="LightSalmon";
+										var l4 = document.createElement("h5");
+										l4.classList.add("card-title");
+										l4.innerText = "From: " + message.from;
+										var l5 = document.createElement("p");
+										l5.classList.add("card-text");
+										l5.innerText = message.content;
+										l4.appendChild(l5);
+										l3.appendChild(l4);
+										l2.appendChild(l3);
+										newmess.appendChild(l2);
+										mainChat.appendChild(newmess);
+					            	
+					            } else if (message.type == "CONTROL") {
+					            	if (message.code == "OK"){
+					            		var el = document.getElementById(message.id);
+					            		el.innerHTML += "<p>Recibido</p>";
+					            		if (message.status == "User not connected")
+					            			document.getElementById("chatWith").style.color = "red";
+					            	} else {
+										var newmess = document.createElement("div");
+										newmess.classList.add("d-flex");
+										newmess.id = message.id;
+					            		var l2 = document.createElement("div");
+										l2.classList.add("card");
+										l2.classList.add("w-75");
+										var l3 = document.createElement("div");
+										l3.classList.add("card-body");
+										l3.style.background="Crimson";
+										var l4 = document.createElement("h5");
+										l4.classList.add("card-title");
+										l4.innerText = "Error";
+										var l5 = document.createElement("p");
+										l5.classList.add("card-text");
+										l5.innerText = message.code;
+										var l6 = document.createElement("p");
+										l6.classList.add("card-text");
+										l6.innerText = message.status;
+										l4.appendChild(l5);
+										l4.appendChild(l6);
+										l3.appendChild(l4);
+										l2.appendChild(l3);
+										newmess.appendChild(l2);
+										mainChat.appendChild(newmess);
+					            	}
+					            }
+					            console.log("Invalid message type received " + message);
+					        }
+					        
+					        function wsSendMessage(x) {
+					            var message = {type: "TEXT",
+					            			id: uuidv4(),
+					            			from : user.user,
+					                        to : chatTo,
+					                        createdAt : new Date().toISOString(),
+					                        content : document.getElementById("chatText").value
+					                    };
+					            
+					            console.log("Enviando el mensaje: " + message);
+
+								var newmess = document.createElement("div");
+								newmess.classList.add("d-flex");
+								newmess.classList.add("flex-row-reverse");
+								newmess.id = message.id;
+			            		var l2 = document.createElement("div");
+								l2.classList.add("card");
+								l2.classList.add("w-75");
+								var l3 = document.createElement("div");
+								l3.classList.add("card-body");
+								l3.style.background="CornflowerBlue";
+								var l4 = document.createElement("h5");
+								l4.classList.add("card-title");
+								l4.innerText = message.to;
+								var l5 = document.createElement("p");
+								l5.classList.add("card-text");
+								l5.innerText = message.content;
+								l4.appendChild(l5);
+								l3.appendChild(l4);
+								l2.appendChild(l3);
+								newmess.appendChild(l2);
+								mainChat.appendChild(newmess);
+								
+								webSocket.send(JSON.stringify(message));
+					        }
+					        
+					        function wsClose(message) {
+					            console.log("Closing Websocket connection");
+					        }
+
+					        function wsError(message) {
+					            console.log("Error ... \n" + message);
+					        }
+					        
+					        function uuidv4() {
+					        	return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+					        	    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+					          );
+					        }
+					});
+		</script>
+</body>
+</html>

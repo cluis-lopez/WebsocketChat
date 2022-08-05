@@ -105,7 +105,9 @@
 	</script>
 	<script>
 	'use strict';
-	 window.addEventListener('load', function () {
+	window.addEventListener('load', function () {
+	// Empty the local storage
+	window.localStorage.clear();
 	// Initialize some variables
 	const successModal = new bootstrap.Modal('#success');
 	const successModalEl = document.getElementById('success');
@@ -139,7 +141,7 @@
 		});
 	 
 	 successModalEl.addEventListener('hidden.bs.modal', event => {
-			window.location.href = "client.html";
+			window.location.href = "login.html";
 		});
 	 
 	 var forms = document.getElementsByClassName('needs-validation');

@@ -2,6 +2,8 @@ package com.clopez.chat;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +40,7 @@ public class Server {
 
     @OnOpen
     public void onOpen(Session session, @PathParam("payload") String pl) {
-        System.out.println("Open Connection ..." + session.getId() + " Payload: " + pl);
+        System.out.println("Open Connection ..." + session.getId() + " Credentials: " + pl);
         if (isValidPayload(pl)) {
             payload = gson.fromJson(pl, typePayload);
             User u = userdb.findById(payload.get("id"));
@@ -90,13 +92,12 @@ public class Server {
         response = new HashMap<>();
     	response.put("type", "CONTROL");
         response.put("code", "OK");
-
-        if (!isValidMessage(pl)) {
+        response.put("status", "");
+        
+        Message m;
+        if ((m = isValidMessage(pl)) == null) {
             response.put("code", "Invalid Message");
         } else {
-            payload = gson.fromJson(pl, typePayload);
-            Message m = new Message(payload);
-            
             if (! isValidUser(payload.get("to"))){ //Usuario no registrado
             	response.put("code", "Invalid user");
             } else {
@@ -104,26 +105,17 @@ public class Server {
             	if (sid != null) //Usuario conectado
             		if (m.send(sid))
             			response.put("id", payload.get("id"));
-            	
+            		else {
+            			response.put("code", "Cannot deliver Message");
+            			response.put("status", "Cannot deliver message");
+            		} else
+            			response.put("status", "User not connected");
             	user.updateRecent(payload.get("to"));
             	if (user.needsUpdate())
             		userdb.saveDatabase();
             	messdb.addMessage(m);
             	}
             }
-			/*
-			 * if (sid != null){ //El usuario "to" está conectado if (m.send(sid)) {
-			 * response.put("id", payload.get("id")); user.updateRecent(payload.get("to"));
-			 * if (user.needsUpdate()) userdb.saveDatabase();
-			 * System.out.println("Enviado mensaje al usuario: " + m.getTo() +
-			 * " SesionId: "+ sid.getId() + " desde el usuario " + m.getFrom()); } else {
-			 * System.out.println("Error al enviar el mensaje"); } } else if
-			 * (isValidUser(payload.get("to"))){ //User exists but is not connected
-			 * user.updateRecent(payload.get("to")); if (user.needsUpdate())
-			 * userdb.saveDatabase(); System.out.println("Mensaje añadido a la cola de " +
-			 * payload.get("to")); } else { response.put("code",
-			 * "Invalid or non-connected user"); }
-			 */
   
         System.out.println("Devuelto al remitente : " + gson.toJson(response));
         return gson.toJson(response);
@@ -155,20 +147,28 @@ public class Server {
         if (json != null && isValidJson(json)) {
             payload = gson.fromJson(json, typePayload);
             if (payload.get("id") != null && payload.get("id") != "")
-                return true;
+            	return true;
         }
         return false;
     }
 
-    private boolean isValidMessage(String json) {
+    private Message isValidMessage(String json) {
+    	Message m = null;
         if (json != null && isValidJson(json)) {
             payload = gson.fromJson(json, typePayload);
             String from = payload.get("from");
             if (from != null && ! from.equals("")
-            		&& from.equals(user.getName() )&& payload.get("type") != null)
-                return true;
+            		&& from.equals(user.getName() )&& payload.get("type") != null 
+            		&& payload.get("createdAt")!= null) {
+            	try {
+            		Instant.parse(payload.get("createdAt"));
+            		m = new Message(payload);
+            	} catch (DateTimeParseException e) {
+            		m = null;
+            	}
+            }
         }
-        return false;
+        return m;
     }
 
     private Session isConnectedUser(String uname){

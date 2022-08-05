@@ -92,6 +92,8 @@
 		window.addEventListener(
 						'load',
 						function() {
+							//Empty the localstorage
+							window.localStorage.clear();
 							// Initialize some variables
 							const myModal = new bootstrap.Modal('#warning');
 							const myModalEl = document.getElementById('warning');
@@ -104,9 +106,9 @@
 								if (this.readyState == 4 && this.status == 200) {
 									var resp = JSON.parse(this.responseText);
 									if (resp.code == "OK") {
-										window.localStorage.setItem("payload",
+										window.localStorage.setItem("credentials",
 												JSON.stringify(resp));
-										location.href = "client.html";
+										location.href = "chatlist.html";
 									} else {
 										console.log(resp.code);
 										document.getElementById("warningtext").innerHTML = resp.code;

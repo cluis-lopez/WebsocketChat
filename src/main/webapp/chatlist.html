@@ -50,62 +50,24 @@
 			</div>
 		</div>
 	</section>
-	<section class="h-100" id="chatroom">
-		<nav class="navbar fixed-top navbar-light bg-light">
-  			<div class="container-fluid">
-    			<a class="navbar-brand" href="#" id="chatWith">N.A.</a>
-    			    <form class="d-flex">
-      					<button class="btn btn-outline-success" type="submit" id="back">Back</button>
-    				</form>
-  			</div>
-		</nav>
-		<div class="container" id="mainchat">
-			<div class="d-flex flex-row-reverse">
-				<div class="card w-75">
-  					<div class="card-body" style="background: Aquamarine;">
-    					<h5 class="card-title">From Me</h5>
-    					<p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-    					<a href="#" class="btn btn-primary">Button</a>
-  					</div>
-				</div>
-			</div>
-			<div class="d-flex">
-				<div class="card w-75">
-  					<div class="card-body" style="background: LightSalmon;">
-    					<h5 class="card-title">From Other</h5>
-    					<p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-    					<a href="#" class="btn btn-primary">Button</a>
-  					</div>
-				</div>
-			</div>
-		</div>
-		<nav class="navbar fixed-bottom navbar-light bg-light">
-  			<div class="container-fluid">
-    			    <form class="d-flex justify-content-end">
-      					<input class="form-control me-2 flex-grow-1" type="text" placeholder="Mensaje" aria-label="Mensaje">
-      					<button class="btn btn-outline-success" type="submit" id="send">Enviar</button>
-    				</form>
-  			</div>
-		</nav>
-	</section>
 	<script>
 		'use strict';
 		window.addEventListener(
 						'load',
 						function() {
-							// Initialize app variables
-							var payload = localStorage.getItem("payload");
-        					if (payload == null)
+							//Initialize app variables
+							var credentials = localStorage.getItem("credentials");
+        					if (credentials == null)
             					location.href = "login.html";
-        					var user = JSON.parse(payload);
+        					var user = JSON.parse(credentials);
+        					var chatTo;
+        					
+        					// Initialize UI variables and components
         					document.getElementById("searchButton").addEventListener("click", searchChats);
         					document.getElementById("reload").addEventListener("click", reload);
-        					document.getElementById("back").addEventListener("click", backToSelection);
         					var selection = document.getElementById("selection");
-        					var chatroom = document.getElementById("chatroom");
-        					chatroom.style.visibility="hidden";
 
-							//Initialize the xhttp request
+							//Initialize the unnatended xhttp request to get LastChats and search users/groups
 							var xhttp = new XMLHttpRequest();
 							xhttp.open("GET", "/ChatServer/Userdata?id="+ user.id
 									+ "&token=" + user.token + "&maxNumber=5&command=lastChats", true);
@@ -119,8 +81,7 @@
 										recreateList(chats);
 									} else {
 										console.log(resp.code);
-										document.getElementById("warningtext").innerHTML = resp.code;
-										myModal.show();
+										location.href= "login.html";
 									}
 								}
 							};
@@ -164,20 +125,15 @@
 									l.addEventListener("click", chatWith, false);
 								}
 							}
-							
-							function backToSelection() {
-								chatroom.style.visibility="hidden";
-								selection.style.visibility="visible";
-							}
-							
+												
 							function chatWith(evt){
 								console.log("Chat with " + evt.currentTarget.id);
-								selection.style.visibility="hidden";
-								chatroom.style.visibility="visible";
-								var chatWith = evt.currentTarget.id.slice(8);
-								document.getElementById("chatWith").innerText = chatWith;
-							};
-					});
+								chatTo = evt.currentTarget.id.slice(8);
+								console.log("chateando con: " + chatTo);
+								location.href = "chatroom.html?chatTo" + chatTo;
+								//Load last messages from chat if any
+							}							
+			});
 		</script>
 </body>
 </html>

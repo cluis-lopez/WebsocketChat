@@ -61,7 +61,7 @@ public class UserData extends HttpServlet {
         			jarr.add(lu.get(i).getName());
         		job.add("chatList", jarr);
         	} else {
-        		job.addProperty("code", "Invalid coomand");
+        		job.addProperty("code", "Invalid command");
         	}
         } else {
         	job.addProperty("code", "Invalid user or token");
