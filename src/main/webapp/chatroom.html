@@ -16,7 +16,7 @@
 
 <body>
 	<section class="h-100" id="chatroom">
-		<nav class="navbar fixed-top navbar-light bg-light">
+		<nav class="navbar fixed-top navbar-light bg-light" id="topnavbar">
   			<div class="container-fluid">
     			<a class="navbar-brand" href="#" id="chatWith">N.A.</a>
     			    <form class="d-flex">
@@ -27,7 +27,7 @@
 		<div class="container" id="mainChat">
 
 		</div>
-		<nav class="navbar fixed-bottom navbar-light bg-light">
+		<nav class="navbar fixed-bottom navbar-light bg-light" id="bottomnavbar">
   			<div class="container-fluid" id="bottomBar">
     			    <div class="d-flex justify-content-end">
       					<input class="form-control me-2 flex-grow-1" id="chatText" type="text" placeholder="Mensaje" aria-label="Mensaje">
@@ -50,6 +50,8 @@
         					console.log("chateando con: " + chatTo);
         					if (chatTo == null || chatTo == "" || chatTo == user.user)
         						location.href = "chatlist.html";
+        					const weekdays = ["Domingo", "Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado"];
+
         					
         					// Initialize UI variables and components
         					document.getElementById("back").addEventListener("click", backToChatList);
@@ -58,6 +60,8 @@
         					var bottomBar = document.getElementById("bottomBar");
         					var chatWith = document.getElementById("chatWith");
         					chatWith.innerText = chatTo;
+        					mainChat.style.marginTop = document.getElementById("topnavbar").offsetHeight + 'px';
+                            mainChat.style.marginBottom = document.getElementById("bottomnavbar").offsetHeight + 'px';
         					
         					//Initialize the Websocket client
         					var websocket = new WebSocket("ws://192.168.1.11:8080/ChatServer/Server/{" + credentials + "}");
@@ -87,31 +91,50 @@
 					            console.log("Ha llegado el mensaje " + message);
 					            
 					            if (message.type == "TEXT"){
-										var newmess = document.createElement("div");
-										newmess.classList.add("d-flex");
-										newmess.id = message.id;
-					            		var l2 = document.createElement("div");
-										l2.classList.add("card");
-										l2.classList.add("w-75");
-										var l3 = document.createElement("div");
-										l3.classList.add("card-body");
-										l3.style.background="LightSalmon";
-										var l4 = document.createElement("h5");
-										l4.classList.add("card-title");
-										l4.innerText = "From: " + message.from;
-										var l5 = document.createElement("p");
-										l5.classList.add("card-text");
-										l5.innerText = message.content;
-										l4.appendChild(l5);
-										l3.appendChild(l4);
-										l2.appendChild(l3);
-										newmess.appendChild(l2);
-										mainChat.appendChild(newmess);
+					            	var temp = new Date( ( message.createdAt.seconds * 1000 ) + ( message.createdAt.nanos / 1000000 ) ) 
+						            message.createdAt = temp.toISOString();
+					            	
+					            	var newmess = document.createElement("div");
+	                                newmess.classList.add("d-flex");
+	                                var card = document.createElement("div");
+	                                card.classList.add("card");
+	                                card.classList.add("w-50");
+	                                card.classList.add("border-primary");
+	                                var cardBody = document.createElement("div");
+	                                cardBody.classList.add("card-body");
+	                                cardBody.style.background = "LightSalmon";
+	                                var cardHeader = document.createElement("h6");
+	                                cardHeader.classList.add("card-header");
+	                                cardHeader.innerHTML = "From: <strong>" + message.from + "</strong>";
+	                                var cardText = document.createElement("p");
+	                                cardText.classList.add("card-text");
+	                                cardText.innerText = message.content;
+	                                var cardFooter = document.createElement("div");
+	                                cardFooter.classList.add("card-footer");
+	                                var row = document.createElement("div");
+	                                row.classList.add("row");
+	                                row.classList.add("justify-content-between");
+	                                var dateReceived = document.createElement("small");
+	                                dateReceived.innerText = formattedTime(message.createdAt);
+	                                dateReceived.classList.add("col-4")
+	                                var status = document.createElement("small");
+	                                status.classList.add("col-4");
+	                                status.id = message.id;
+	                                status.innerText="status";
+	                                row.appendChild(dateReceived);
+	                                row.appendChild(status);
+	                                cardFooter.appendChild(row);
+	                                cardBody.appendChild(cardText);
+	                                card.appendChild(cardHeader);
+	                                card.appendChild(cardBody);
+	                                card.appendChild(cardFooter);
+	                                newmess.appendChild(card);
+	                                mainChat.appendChild(newmess);
 					            	
 					            } else if (message.type == "CONTROL") {
 					            	if (message.code == "OK"){
 					            		var el = document.getElementById(message.id);
-					            		el.innerHTML += "<p>Recibido</p>";
+					            		el.innerText= "Recibido";
 					            		if (message.status == "User not connected")
 					            			document.getElementById("chatWith").style.color = "red";
 					            	} else {
@@ -139,9 +162,14 @@
 										l2.appendChild(l3);
 										newmess.appendChild(l2);
 										mainChat.appendChild(newmess);
+										onsole.log("Invalid message type received " + message);
 					            	}
 					            }
-					            console.log("Invalid message type received " + message);
+					            
+                                window.scrollTo({
+                                    top: mainChat.scrollHeight,
+                                    behavior: 'smooth'
+                                });
 					        }
 					       					        
 					        function wsSendMessage () {
@@ -156,27 +184,50 @@
 					            console.log("Enviando el mensaje: " + message);
 					            document.getElementById("chatText").value = "";
 
-								var newmess = document.createElement("div");
-								newmess.classList.add("d-flex");
-								newmess.classList.add("flex-row-reverse");
-								newmess.id = message.id;
-			            		var l2 = document.createElement("div");
-								l2.classList.add("card");
-								l2.classList.add("w-75");
-								var l3 = document.createElement("div");
-								l3.classList.add("card-body");
-								l3.style.background="CornflowerBlue";
-								var l4 = document.createElement("h5");
-								l4.classList.add("card-title");
-								l4.innerText = message.to;movil?
-								var l5 = document.createElement("p");
-								l5.classList.add("card-text");
-								l5.innerText = message.content;
-								l4.appendChild(l5);
-								l3.appendChild(l4);
-								l2.appendChild(l3);
-								newmess.appendChild(l2);
-								mainChat.appendChild(newmess);
+					            document.getElementById("chatText").value = "";
+
+                                var newmess = document.createElement("div");
+                                newmess.classList.add("d-flex");
+                                newmess.classList.add("flex-row-reverse"); //Solo para mensaje propio
+                                var card = document.createElement("div");
+                                card.classList.add("card");
+                                card.classList.add("w-50");
+                                card.classList.add("border-primary");
+                                var cardBody = document.createElement("div");
+                                cardBody.classList.add("card-body");
+                                cardBody.style.background = "CornflowerBlue";
+                                var cardHeader = document.createElement("h6");
+                                cardHeader.classList.add("card-header");
+                                cardHeader.innerHTML = "To: <strong>" + message.to + "</strong>";
+                                var cardText = document.createElement("p");
+                                cardText.classList.add("card-text");
+                                cardText.innerText = message.content;
+                                var cardFooter = document.createElement("div");
+                                cardFooter.classList.add("card-footer");
+                                var row = document.createElement("div");
+                                row.classList.add("row");
+                                row.classList.add("justify-content-between");
+                                var dateReceived = document.createElement("small");
+                                dateReceived.innerText = formattedTime(message.createdAt);
+                                dateReceived.classList.add("col-4")
+                                var status = document.createElement("small");
+                                status.classList.add("col-4");
+                                status.id = message.id;
+                                status.innerText="status";
+                                row.appendChild(dateReceived);
+                                row.appendChild(status);
+                                cardFooter.appendChild(row);
+                                cardBody.appendChild(cardText);
+                                card.appendChild(cardHeader);
+                                card.appendChild(cardBody);
+                                card.appendChild(cardFooter);
+                                newmess.appendChild(card);
+                                mainChat.appendChild(newmess);
+                                
+                                window.scrollTo({
+                                    top: mainChat.scrollHeight,
+                                    behavior: 'smooth'
+                                });
 								
 								websocket.send(JSON.stringify(message));
 					        }
@@ -194,6 +245,44 @@
 					        	    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
 					          );
 					        }
+					        
+							function formattedTime(x) {
+								let now = new Date().getTime();
+								let dev = Date.parse(x);
+								let startOfToday = new Date();
+								startOfToday.setHours(0, 0, 0, 0);
+								let sot = startOfToday.getTime();
+								let timeDiff = Math.round((now - dev) / 1000); //Diferencia en segundos
+								// let seconds = Math.floor(timeDiff % 60);
+								// let secondsAsString = seconds < 10 ? "0" + seconds : seconds;
+								timeDiff = Math.floor(timeDiff / 60);
+								let minutes = timeDiff % 60;
+								// let minutesAsString = minutes < 10 ? "0" + minutes : minutes;
+								timeDiff = Math.floor(timeDiff / 60);
+								let hours = timeDiff % 24;
+								// return "Hace "+hours+ (hours ==1 ? " hora" : " horas")+" y "+minutes+" minutos";
+								timeDiff = Math.floor(timeDiff / 24);
+								let days = timeDiff;
+								if (dev > sot) {
+									if (hours == 0)
+										if (minutes < 5)
+											return "Hace un momento";
+										else
+											return "Hace " + minutes + " minutos";
+									else
+										return "Hace " + hours + (hours < 1 ? " hora " : " horas ") + " y " + minutes + " minutos";
+								} else if (days <= 6) {
+									let d = new Date(dev)
+									hours = d.getHours();
+									minutes = d.getMinutes();
+									return "El " + weekdays[d.getDay()] + " a las " + (hours < 10 ? "0" + hours : hours) +
+										":" + (minutes < 10 ? "0" + minutes : minutes);
+								} else {
+									return new Date(dev).toLocaleDateString('es-ES',
+										{ day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric' });
+								}
+
+							}
 				});
 		</script>
 </body>

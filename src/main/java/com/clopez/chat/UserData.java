@@ -34,7 +34,7 @@ public class UserData extends HttpServlet {
         
         User user = userdb.findById(userid);
 
-        if (user != null && token.equals(user.getToken()) && user.isTokenValid() && command != null) {
+        if (user != null && token != null && token.equals(user.getToken()) && user.isTokenValid() && command != null) {
         	job.addProperty("code", "OK");
         	int maxNumber = 5;
         	try {
