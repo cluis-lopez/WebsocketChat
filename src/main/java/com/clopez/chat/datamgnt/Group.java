@@ -42,7 +42,7 @@ public class Group {
     	return users.size();
     }
 
-    public void addMember(User user) throws IllegalArgumentException {
+    protected void addMember(User user) throws IllegalArgumentException {
     	//UserDatabase db = new UserDatabase("usersdb");
         if (user != null) // && db.findUserByName(user.getName()) != null)
             users.add(user);
@@ -50,16 +50,16 @@ public class Group {
             throw new IllegalArgumentException("Invalid user");
     }
 
-    public void removeMember(User user) throws IllegalArgumentException {
+    protected void removeMember(User user) throws IllegalArgumentException {
     	if (user != null && user == owner)
     		throw new IllegalArgumentException("No se puede eliminar al propietario del grupo");
-        if (user != null && users.contains(user))
+        if (user != null && isMember(user))
             users.remove(user);
         else
             throw new IllegalArgumentException("Invalid user");
     }
 
-    public boolean isMember(User user) {
+    protected boolean isMember(User user) {
         return users.contains(user);
     }
 }

@@ -1,19 +1,8 @@
 package com.clopez.chat.datamgnt;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
 
 public class GroupDatabase extends SimpleJsonDatabase<Group>{
 	
@@ -27,6 +16,34 @@ public class GroupDatabase extends SimpleJsonDatabase<Group>{
 	
 	public void deleteGroup(Group g) {
 		deleteItem(g.getId());
+	}
+	
+	public boolean addmember(String id, User u) {
+		boolean ret = false;
+		Group g = data.get(id);
+		try {
+			g.addMember(u);
+			saveDatabase();
+			ret = true;
+		} catch (IllegalArgumentException e) {
+			System.out.println(e);
+			ret = false;
+		}
+		return ret;
+	}
+	
+	public boolean removeMember(String id, User u) {
+		boolean ret = false;
+		Group g = data.get(id);
+		try {
+			g.removeMember(u);
+			ret = true;
+			saveDatabase();
+		} catch (IllegalArgumentException e) {
+			System.out.println(e);
+			ret = false;
+		}
+		return ret;
 	}
 
 	public Group findGroupByName(String name) {

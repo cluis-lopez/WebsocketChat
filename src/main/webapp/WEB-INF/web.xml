@@ -10,8 +10,18 @@
   	<description></description>
   	<servlet-class>com.clopez.chat.UserData</servlet-class>
   </servlet>
+  <servlet>
+  	<servlet-name>GroupData</servlet-name>
+  	<display-name>GroupData</display-name>
+  	<description></description>
+  	<servlet-class>com.clopez.chat.GroupData</servlet-class>
+  </servlet>
   <servlet-mapping>
   	<servlet-name>UserData</servlet-name>
   	<url-pattern>/UserData</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+  	<servlet-name>GroupData</servlet-name>
+  	<url-pattern>/GroupData</url-pattern>
   </servlet-mapping>
 </web-app>

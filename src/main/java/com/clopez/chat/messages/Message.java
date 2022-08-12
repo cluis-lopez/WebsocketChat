@@ -48,7 +48,7 @@ public class Message {
 	}
 	
 	public boolean send(Session sid) {
-		boolean ret = false;
+		boolean ret;
 		Gson gson = new Gson();
 		try {
 			sid.getBasicRemote().sendText(gson.toJson(this));

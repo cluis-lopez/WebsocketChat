@@ -105,7 +105,7 @@
 	                                cardBody.style.background = "LightSalmon";
 	                                var cardHeader = document.createElement("h6");
 	                                cardHeader.classList.add("card-header");
-	                                cardHeader.innerHTML = "From: <strong>" + message.from + "</strong>";
+	                                cardHeader.innerHTML = "<strong>" + message.from + "</strong>";
 	                                var cardText = document.createElement("p");
 	                                cardText.classList.add("card-text");
 	                                cardText.innerText = message.content;
@@ -116,9 +116,9 @@
 	                                row.classList.add("justify-content-between");
 	                                var dateReceived = document.createElement("small");
 	                                dateReceived.innerText = formattedTime(message.createdAt);
-	                                dateReceived.classList.add("col-4")
+	                                dateReceived.classList.add("col-5")
 	                                var status = document.createElement("small");
-	                                status.classList.add("col-4");
+	                                status.classList.add("col-5");
 	                                status.id = message.id;
 	                                status.innerText="status";
 	                                row.appendChild(dateReceived);
@@ -184,8 +184,6 @@
 					            console.log("Enviando el mensaje: " + message);
 					            document.getElementById("chatText").value = "";
 
-					            document.getElementById("chatText").value = "";
-
                                 var newmess = document.createElement("div");
                                 newmess.classList.add("d-flex");
                                 newmess.classList.add("flex-row-reverse"); //Solo para mensaje propio
@@ -198,7 +196,7 @@
                                 cardBody.style.background = "CornflowerBlue";
                                 var cardHeader = document.createElement("h6");
                                 cardHeader.classList.add("card-header");
-                                cardHeader.innerHTML = "To: <strong>" + message.to + "</strong>";
+                                cardHeader.innerHTML = "<strong>T&uacute;</strong>";
                                 var cardText = document.createElement("p");
                                 cardText.classList.add("card-text");
                                 cardText.innerText = message.content;
@@ -209,9 +207,9 @@
                                 row.classList.add("justify-content-between");
                                 var dateReceived = document.createElement("small");
                                 dateReceived.innerText = formattedTime(message.createdAt);
-                                dateReceived.classList.add("col-4")
+                                dateReceived.classList.add("col-5")
                                 var status = document.createElement("small");
-                                status.classList.add("col-4");
+                                status.classList.add("col-5");
                                 status.id = message.id;
                                 status.innerText="status";
                                 row.appendChild(dateReceived);
@@ -266,16 +264,16 @@
 								if (dev > sot) {
 									if (hours == 0)
 										if (minutes < 5)
-											return "Hace un momento";
+											return "Ahora";
 										else
-											return "Hace " + minutes + " minutos";
+											return minutes + " m.";
 									else
-										return "Hace " + hours + (hours < 1 ? " hora " : " horas ") + " y " + minutes + " minutos";
+										return hours + " h." + minutes + " m.";
 								} else if (days <= 6) {
 									let d = new Date(dev)
 									hours = d.getHours();
 									minutes = d.getMinutes();
-									return "El " + weekdays[d.getDay()] + " a las " + (hours < 10 ? "0" + hours : hours) +
+									return weekdays[d.getDay()] + " " + (hours < 10 ? "0" + hours : hours) +
 										":" + (minutes < 10 ? "0" + minutes : minutes);
 								} else {
 									return new Date(dev).toLocaleDateString('es-ES',
