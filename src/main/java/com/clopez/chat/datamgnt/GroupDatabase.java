@@ -56,12 +56,12 @@ public class GroupDatabase extends SimpleJsonDatabase<Group>{
 		return null;
 	}
 	
-	public List<Group> findByOwner(User o) {
+	public List<Group> findByOwner(User u) {
 		List <Group> groups = new ArrayList<>();
 		Group g;
 		for (String id : data.keySet()) {
 			g = data.get(id);
-			if (g.getOwner() == o)
+			if (g.getOwner().equals(u.getName()))
 				groups.add(g);		
 		}
 		return groups;

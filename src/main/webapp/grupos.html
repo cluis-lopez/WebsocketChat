@@ -12,103 +12,117 @@
 </head>
 
 <body>
-    <section class="h-100" id="selection">
-        <div class="container h-100">
-            <div class="row justify-content-sm-center h-100">
-                <div class="d-flex" style="height: 50px;">
-                    <div class="vr"></div>
-                </div>
-                <div class="col-xxl-4 col-xl-5 col-lg-5 col-md-7 col-sm-9">
-                    <div class="card shadow-lg">
-                        <nav>
-                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                              <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Administrador</button>
-                              <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Usuario</button>
-                            </div>
-                          </nav>
-                          <div class="tab-content" id="nav-tabContent">
-                            <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
-                                <ul class="list-group" id="ownerOf">
-                                    <li class="list-group-item">An item</li>
-                                    <li class="list-group-item">A second item</li>
-                                    <li class="list-group-item">A third item</li>
-                                    <li class="list-group-item">A fourth item</li>
-                                    <li class="list-group-item">And a fifth one</li>
-                                  </ul>
-                            </div>
-                            <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
-                                <ul class="list-group" id=""userOf">
-                                    <li class="list-group-item">An item</li>
-                                    <li class="list-group-item">A second item</li>
-                                    <li class="list-group-item">A third item</li>
-                                    <li class="list-group-item">A fourth item</li>
-                                    <li class="list-group-item">And a fifth one</li>
-                                  </ul>
-                            </div>
-                          </div>
-                    </div>
-                </div>
-                <div class="d-flex" style="height: 50px;">
-                    <div class="vr"></div>
-                </div>
-                <div class="col-xxl-4 col-xl-5 col-lg-5 col-md-7 col-sm-9">
-                    <div class="card shadow-lg">
-                        <div class="card-footer py-3 border-0">
-							<div class="text-center">
-								<a href="#" class="text-dark" id="gotoCreate">Crear nuevo Grupo</a>
-							</div>
-						</div>
-					</div>
-					<div class="text-center mt-5 text-muted">Copyright &copy;
-						2022 &mdash; Carlos L. Lopez</div>
-            </div>
-        </div>
-    </section>
-    <section class="h-100" id="create">
-        <div class="container h-100" id="create">
-            <div class="row justify-content-sm-center h-100">
-                <div class="d-flex" style="height: 50px;">
-                    <div class="vr"></div>
-                </div>
-                <div class="col-xxl-4 col-xl-5 col-lg-5 col-md-7 col-sm-9">
-                    <div class="card shadow-lg">
-                        <div class="mb-3">
-                            <label for="groupName" class="form-label">Nombre</label>
-                            <input type="text" class="form-control" id="groupName" name="groupName" placeholder="Nombre del Grupo">
-                        </div>
-                        <div class="mb-3">
-                            <label for="groupOwner" class="form-label">Administrador</label>
-                            <input type="text" class="form-control" id="groupOwner" name="groupOwner" disabled readonly></input>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    <section class="h-100" id="mainPage"></section>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.min.js"
-    integrity="sha384-ODmDIVzN+pFdexxHEHFBQH3/9/vQ9uori45z4JjnFsRydbmQbmL5t1tQ0culUzyK"
-    crossorigin="anonymous">
-   </script>
+        integrity="sha384-ODmDIVzN+pFdexxHEHFBQH3/9/vQ9uori45z4JjnFsRydbmQbmL5t1tQ0culUzyK" crossorigin="anonymous">
+        </script>
     <script>
+        'use strict';
+        window.addEventListener(
+            'load',
+            function () {
 
-            var selection = document.getElementById('selection');
-            var create = document.getElementById('create');
-            var gotoCreate = document.getElementById('gotoCreate');
+                var credentials = localStorage.getItem("credentials");
+                if (credentials == null)
+                    location.href = "login.html";
+                var userData = JSON.parse(credentials);
+                var xhttp = new XMLHttpRequest();
 
-            gotoCreate.addEventListener('click', function(){
-                selection.style.visibility = "hidden";
-                create.style.visibility = "visible";
-            })
+                loadSelectPage();
 
-            selection.style.visibility = "visible";
-            create.style.visibility = "hidden";
+                function loadSelectPage() {
+                    fetch('groups/select.html').then(response => response.text())
+                        .then(text => {
+                            document.getElementById('mainPage').innerHTML = text;
+                            var gotoCreate = document.getElementById('gotoCreate');
 
-            var navtab = document.getElementById("nav-tab");
-            var tabTrigger = new bootstrap.Tab(navtab);
-            navtab.addEventListener("click", function (evt) {
-                evt.preventDefault();
-                tabTrigger.show();
-            })
+                            gotoCreate.addEventListener('click', loadCreatePage);
+
+                            var navtab = document.getElementById("nav-tab");
+                            var tabTrigger = new bootstrap.Tab(navtab);
+                            navtab.addEventListener("click", function (evt) {
+                                evt.preventDefault();
+                                tabTrigger.show();
+                            });
+
+                            xhttp.open("GET", "/ChatServer/Groupdata/userGroupMgmt?id=" + userData.id + "&token=" + userData.token, true);
+                            xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                            xhttp.setRequestHeader("Accept", "application/json");
+                            xhttp.onload = function () {
+                                if (this.readyState == 4 && this.status == 200) {
+                                    var resp = JSON.parse(this.responseText);
+                                    if (resp.code == "OK") {
+                                        console.log(resp);
+                                        recreateList(resp.ownerOf, "ownerOf");
+                                        recreateList(resp.userOf, "userOf")
+                                    } else {
+                                        console.log(resp.code);
+                                        document.getElementById("warningtext").innerHTML = resp.code;
+                                        warningModal.show();
+                                    }
+                                }
+                            };
+                            xhttp.send();
+                        });
+                }
+
+                function recreateList(elements, lista) {
+                    var lista = document.getElementById(lista);
+                    while (lista.firstChild) {
+                        lista.removeChild(lista.firstChild);
+                    }
+
+                    for (var s in elements) {
+                        if (elements[s] == "")
+                            continue;
+                        var l = document.createElement("li");
+                        l.setAttribute("id", "element_" + elements[s]);
+                        l.classList.add("list-group-item");
+                        l.appendChild(document.createTextNode(elements[s]));
+                        lista.appendChild(l);
+                        l.addEventListener("click", adminGroup, false);
+                    }
+                }
+
+                function adminGroup(){
+                    
+                }
+
+                function loadCreatePage() {
+                    fetch('groups/create.html').then(response => response.text())
+                        .then(text => {
+                            document.getElementById('mainPage').innerHTML = text;
+                            document.getElementById('owner').value = userData.user;
+                            document.getElementById('submit').addEventListener('click', creaGrupo);
+                        });
+                }
+
+                function creaGrupo() {
+                    const successModal = new bootstrap.Modal('#success');
+                    const successModalEl = document.getElementById('success');
+                    const warningModal = new bootstrap.Modal('#warning');
+                    const warningModalEl = document.getElementById('warning');
+                    xhttp.open("POST", "/ChatServer/Groupdata/groupMgmt", true);
+                    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                    xhttp.setRequestHeader("Accept", "application/json");
+                    xhttp.onload = function () {
+                        if (this.readyState == 4 && this.status == 200) {
+                            var resp = JSON.parse(this.responseText);
+                            if (resp.code == "OK") {
+                                document.getElementById("successtext").innerHTML = "El grupo " + resp.group + " se ha creado con &eacute;xito";
+                                successModal.show();
+                            } else {
+                                console.log(resp.code);
+                                document.getElementById("warningtext").innerHTML = resp.code;
+                                warningModal.show();
+                            }
+                        }
+                    };
+                    xhttp.send('id=' + userData.id + '&token=' + userData.token + '&group=' + document.getElementById('name').value);
+                }
+
+
+            });
     </script>
 
 </body>

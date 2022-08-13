@@ -77,26 +77,27 @@ public class GroupData extends HttpServlet {
 
 		User owner = isValidUser(userid, token);
 		if (owner != null) {
-			if (command.equals("groupMgmt")) { // Crear un nuevo grupo
+			if (command.equals("/groupMgmt")) { // Crear un nuevo grupo
 				String name = req.getParameter("group");
 				if (name != null && !name.equals("")) {
 					Group g = new Group(name, owner);
 					groupdb.createGroup(g);
+					response.put("group", name);
 				}
-			} else if (command.equals("userGroupMgmt")) { // Añadir un usuario al grupo
+			} else if (command.equals("/userGroupMgmt")) { // Añadir un usuario al grupo
 				String group = req.getParameter("group");
 				String name = req.getParameter("user");
 				if (name != null && !name.equals("") && group != null && !group.equals("")) {
 					User user = userdb.findUserByName(name);
 					Group g = groupdb.findGroupByName(group);
-					if (!g.getOwner().getName().equals(user.getName())) // Solo el administrador del grupo puede añadir
+					if (!g.getOwner().equals(user.getName())) // Solo el administrador del grupo puede añadir
 																		// nuevos usuarios
 						response.put("code", "You're not the owner of this group");
 					else if (!groupdb.addmember(g.getId(), user))
 						response.put("code", "Invalid user");
 				}
 			} else {
-				response.put("code", "Invaliid or not authoruzed user");
+				response.put("code", "Invaliid API entry point " + command);
 			}
 		} else {
 			response.put("code", "Invaliid or not authoruzed user");
@@ -125,11 +126,11 @@ public class GroupData extends HttpServlet {
 		User user = isValidUser(userid, token);
 
 		if (user != null) {
-			if (command.equals("groupMgmt")) { // Borrar el grupo
+			if (command.equals("/groupMgmt")) { // Borrar el grupo
 				String group = req.getParameter("group");
 				if (group != null && !group.equals("")) {
 					Group g = groupdb.findGroupByName(group);
-					if (user.getName().equals(g.getOwner().getName())) {
+					if (user.getName().equals(g.getOwner())) {
 						try {
 							groupdb.deleteGroup(g);
 						} catch (IllegalArgumentException e) {
@@ -142,7 +143,7 @@ public class GroupData extends HttpServlet {
 				} else {
 					response.put("code", "Invalid group name");
 				}
-			} else if (command.equals("userGroupMgmt")) { // Eliminar un usuario del grupo
+			} else if (command.equals("/userGroupMgmt")) { // Eliminar un usuario del grupo
 				String group = req.getParameter("group");
 				if (group != null && !group.equals("")) {
 					Group g = groupdb.findGroupByName(group);
