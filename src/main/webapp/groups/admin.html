@@ -3,28 +3,31 @@
 		<div class="col-xxl-4 col-xl-5 col-lg-5 col-md-7 col-sm-9">
 			<div class="card shadow-lg">
 				<div class="card-body p-5">
-					<h1 class="fs-4 card-title fw-bold mb-4">Crear un nuevo Grupo</h1>
+					<h1 class="fs-4 card-title fw-bold mb-4" id="title">Administrar </h1>
 					<div class="needs-validation" novalidate="" autocomplete="off">
-						<div class="mb-3">
-							<label class="mb-2 text-muted" for="name">Nombre del Grupo</label>
-							<input id="name" type="text" class="form-control" name="name" value="" required autofocus>
-							<div class="invalid-feedback">Se requiere un nombre</div>
-						</div>
-
 						<div class="mb-3">
 							<label class="mb-2 text-muted" for="pwner">Administrador</label>
 							<input id="owner" type="owner" class="form-control" name="owner" disabled readonly>
 						</div>
 
-						<p class="form-text text-muted mb-3">
-							A&ntilde;ade depu&eacute;s usuarios al grupo desde la página anterior
-						</p>
+						<div class="mb-3">
+							<select class="form-select" aria-label="Selecciona un usuario" id="userList">
+								<option selected>Selecciona un usuario del Grupo</option>
+							</select>
+						</div>
+
+						<div class="mb-3">
+							<label class="mb-2 text-muted" for="pwner">A&ntilde;adir Usuario</label>
+							<input id="user" type="user" class="form-control" name="user">
+						</div>
 
 						<div class="align-items-center d-flex">
 							<button type="submit" id="back" class="btn btn-primary ms-auto">
 								Volver</button>
-							<button type="submit" id="submit" class="btn btn-primary ms-auto">
-								Crear Grupo</button>
+							<button type="submit" id="add" class="btn btn-primary ms-auto">
+								Añadir</button>
+							<button type="submit" id="remove" class="btn btn-primary ms-auto">
+								Borrar</button>
 						</div>
 					</div>
 				</div>

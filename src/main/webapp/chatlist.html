@@ -80,6 +80,9 @@
         					// Initialize UI variables and components
         					document.getElementById("searchButton").addEventListener("click", searchChats);
         					document.getElementById("reload").addEventListener("click", reload);
+							document.getElementById('groups').addEventListener('click', function(){
+								location.href = 'grupos.html';
+							});
         					var selection = document.getElementById("selection");
 
 							//Initialize the unnatended xhttp request to get LastChats and search users/groups
