@@ -10,8 +10,11 @@ public class GroupDatabase extends SimpleJsonDatabase<Group>{
 		super (filename, type);
 	}
 
-	public void createGroup(Group g) {
-		createItem(g.getId(), g);
+	public void createGroup(Group g) throws IllegalArgumentException {
+		if (findGroupByName(g.getName()) == null)
+			createItem(g.getId(), g);
+		else
+			throw new IllegalArgumentException("Duplicated Group Name");
 	}
 	
 	public void deleteGroup(Group g) {

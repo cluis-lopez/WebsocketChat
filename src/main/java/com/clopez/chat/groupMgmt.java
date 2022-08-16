@@ -81,8 +81,13 @@ public class groupMgmt extends HttpServlet {
 			job.addProperty("code", "Invalid or unathorized user");
 		} else {
 			Group g = new Group(req.getParameter("group"), u);
-			groupdb.createGroup(g);
-			job.addProperty("group", g.getName());
+			try {
+				groupdb.createGroup(g);
+				job.addProperty("group", g.getName());
+			} catch (IllegalArgumentException e) {
+				job.addProperty("code", "Invalid group name " + g.getName());
+				e.printStackTrace();
+			}
 		}
 	
 		resp.setContentType("application/json");
@@ -103,10 +108,11 @@ public class groupMgmt extends HttpServlet {
 			job.addProperty("code", "Invalid or unathorized user");
 		} else if ((g = isValidGroup(req.getParameter("group"))) == null) {
 			job.addProperty("code", "Invalid Group name");
-		} else if (! g.getOwner().equals(owner.getName()))) {
+		} else if (! g.getOwner().equals(owner.getName())) {
 			job.addProperty("code", "Unathorized user: only the admin of a group can remove it");
 		} else {
 			groupdb.deleteGroup(g);
+			job.addProperty("code", "OK");
 		}
 
 		resp.setContentType("application/json");
@@ -114,26 +120,13 @@ public class groupMgmt extends HttpServlet {
 		pw.println(job);
 		pw.close();
 	}
-
-	private User isValidUser(String userid, String token) {
-		User u = null;
-		if (userid != null && !userid.equals("") && token != null && !token.equals("")) {
-			u = userdb.findById(userid);
-			if (u == null || !u.getToken().equals(token) || !u.isTokenValid())
-				u = null;
-		}
-		return u;
-	}
 	
 	private boolean isValidParamenters(HttpServletRequest req, String... pars) {
-		boolean ret = false;
 		for (String s : pars) {
-			if (req.getParameter(s) != null && req.getParameter(s) != "")
-				ret = true;
-			else
-				ret = false;
+			if (req.getParameter(s) == null || req.getParameter(s).equals(""))
+				return false;
 		}
-		return ret;
+		return true;
 	}
 	
 	private User isAuthorizedUser(String userid, String token) {
@@ -145,9 +138,5 @@ public class groupMgmt extends HttpServlet {
 	
 	private Group isValidGroup(String groupName) {
 		return groupdb.findGroupByName(groupName);
-	}
-	
-	private User isValidUser(String userName) {
-		return userdb.findUserByName(userName);
-	}
+	}	
 }

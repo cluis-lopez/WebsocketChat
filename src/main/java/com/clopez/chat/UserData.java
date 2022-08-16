@@ -29,7 +29,8 @@ public class UserData extends HttpServlet {
         String userid = req.getParameter("id");
         String token = req.getParameter("token");
         String command = req.getParameter("command");
-        String searchChat = req.getParameter("searchChat");
+        String searchChats = req.getParameter("searchChats");
+        String searchUsers = req.getParameter("searchUsers");
         JsonObject job = new JsonObject();
         
         User user = userdb.findById(userid);
@@ -52,7 +53,8 @@ public class UserData extends HttpServlet {
         		for (int i=0; i<min; i++)
         			jarr.add(temp[i]);
         		job.add("chatList", jarr);
-        	} else if (command.equals("search") && searchChat!= null && ! searchChat.equals("")) {
+        	} else if (command.equals("searchChats") && searchChats!= null && ! searchChats.equals("")) {
+        		//OJO... rebuild para buscar grupos también
         		List<User> lu = userdb.findUserByWildCar(searchChat);
         		System.out.println("Encontrados "+lu.size()+" usuarios/grupos: " + lu.toString());
         		JsonArray jarr = new JsonArray();
@@ -60,7 +62,14 @@ public class UserData extends HttpServlet {
         		for (int i=0; i<min; i++)
         			jarr.add(lu.get(i).getName());
         		job.add("chatList", jarr);
-        	} else {
+        	} else if (command.equals("searchUsers") && searchUsers!= null && ! searchUsers.equals("")) {
+        		List<User> lu = userdb.findUserByWildCar(searchUsers);
+        		System.out.println("Encontrados "+lu.size()+" usuarios/grupos: " + lu.toString());
+        		JsonArray jarr = new JsonArray();
+        		int min = (maxNumber<lu.size()? maxNumber: lu.size());
+        		for (int i=0; i<min; i++)
+        			jarr.add(lu.get(i).getName());
+        		job.add("chatList", jarr);
         		job.addProperty("code", "Invalid command");
         	}
         } else {

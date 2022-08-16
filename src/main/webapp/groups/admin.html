@@ -4,31 +4,43 @@
 			<div class="card shadow-lg">
 				<div class="card-body p-5">
 					<h1 class="fs-4 card-title fw-bold mb-4" id="title">Administrar </h1>
-					<div class="needs-validation" novalidate="" autocomplete="off">
-						<div class="mb-3">
-							<label class="mb-2 text-muted" for="pwner">Administrador</label>
-							<input id="owner" type="owner" class="form-control" name="owner" disabled readonly>
-						</div>
 
-						<div class="mb-3">
+					<div class="mb-3">
+						<label class="mb-2 text-muted" for="owner">Administrador</label>
+						<input id="owner" type="text" class="form-control" name="owner" disabled readonly>
+					</div>
+
+					<div class="mb-3">
+						<label class="mb-2 text-muted" for="owner">Usuarios</label>
+						<div class="d-flex">
 							<select class="form-select" aria-label="Selecciona un usuario" id="userList">
 								<option selected>Selecciona un usuario del Grupo</option>
 							</select>
-						</div>
-
-						<div class="mb-3">
-							<label class="mb-2 text-muted" for="pwner">A&ntilde;adir Usuario</label>
-							<input id="user" type="user" class="form-control" name="user">
-						</div>
-
-						<div class="align-items-center d-flex">
-							<button type="submit" id="back" class="btn btn-primary ms-auto">
-								Volver</button>
-							<button type="submit" id="add" class="btn btn-primary ms-auto">
-								Añadir</button>
 							<button type="submit" id="remove" class="btn btn-primary ms-auto">
 								Borrar</button>
 						</div>
+					</div>
+
+					<div class="mb-3">
+						<div class="row height d-flex justify-content-center align-items-center">
+							<div class="col-12">
+								<label class="mb-2 text-muted" for="pwner">A&ntilde;adir Usuario</label>
+								<div class="d-flex">
+									<input type="text" class="form-control" placeholder="Busca usuarios" id="searchBox">
+									<button class="btn btn-primary" id="searchButton">Search</button>
+									<button id="add" class="btn btn-primary ms-auto">A&ntilde;adir</button>
+								</div>
+							</div>
+							<div class="col-12">
+								<ul class="list-group" id="userList">
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="card-footer py-3 border-0">
+					<div class="d-flex justify-content-center align-items-center">
+						<button type="submit" id="back" class="btn btn-danger ms-auto">Volver</button>
 					</div>
 				</div>
 			</div>

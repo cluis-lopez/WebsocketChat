@@ -47,6 +47,8 @@ public class userGroupMgmt extends HttpServlet {
 				jarr.add(s);
 			job.add("users", jarr);
 			job.addProperty("code", "OK");
+			job.addProperty("group", g.getName());
+			job.addProperty("owner", g.getOwner());
 		} else {
 			job.addProperty("code", "Invalid group name");
 		}
@@ -68,14 +70,14 @@ public class userGroupMgmt extends HttpServlet {
 		User userToAdd;
 		Group g;
 		
-		if (! isValidParamenters(req, "id", "token", "user", "group")) {
+		if (! isValidParamenters(req, "id", "token", "group", "user")) {
 			job.addProperty("code", "Invalid API parameters");
 		} else if ((owner = isAuthorizedUser(req.getParameter("id"), req.getParameter("token"))) == null) {
 			job.addProperty("code", "Invalid or unathorized user");
 		} else if ((g = isValidGroup(req.getParameter("group"))) == null) {
 			job.addProperty("code", "Invalid Group name");
-		} else if ((userToAdd = isValidUser(req.getParameter("user"))) != null) {
-			job.addProperty("code", "Invalid user to include in the group's members");
+		} else if ((userToAdd = isValidUser(req.getParameter("user"))) == null) {
+			job.addProperty("code", "Invalid user to include as member of group " + g.getName());
 		} else if (userToAdd.getName().equals(owner.getName())) {
 			job.addProperty("code", "Owner cannot be into the group's member lists");
 		} else if (! g.getOwner().equals(owner.getName())) {
@@ -109,9 +111,9 @@ public class userGroupMgmt extends HttpServlet {
 			job.addProperty("code", "Invalid or unathorized user");
 		} else if ((g = isValidGroup(req.getParameter("group"))) == null) {
 			job.addProperty("code", "Invalid Group name");
-		} else if ((userToDelete = isValidUser(req.getParameter("user"))) != null) {
+		} else if ((userToDelete = isValidUser(req.getParameter("user"))) == null) {
 			job.addProperty("code", "Invalid user to delete from the group's members");
-		} else if (! g.getUsers().contains(userToDelete)) {
+		} else if (! g.getUsers().contains(userToDelete.getName())) {
 			job.addProperty("code", "This user is not in the group already");
 		} else if (owner.getName().equals(g.getOwner()) || userToDelete.getName().equals(owner.getName())) {
 			groupdb.removeMember(g.getId(), userToDelete);
@@ -129,14 +131,11 @@ public class userGroupMgmt extends HttpServlet {
 		
 
 	private boolean isValidParamenters(HttpServletRequest req, String... pars) {
-		boolean ret = false;
 		for (String s : pars) {
-			if (req.getParameter(s) != null && req.getParameter(s) != "")
-				ret = true;
-			else
-				ret = false;
+			if (req.getParameter(s) == null || req.getParameter(s).equals(""))
+				return false;
 		}
-		return ret;
+		return true;
 	}
 	
 	private User isAuthorizedUser(String userid, String token) {
