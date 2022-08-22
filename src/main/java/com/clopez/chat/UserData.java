@@ -55,7 +55,7 @@ public class UserData extends HttpServlet {
         		job.add("chatList", jarr);
         	} else if (command.equals("searchChats") && searchChats!= null && ! searchChats.equals("")) {
         		//OJO... rebuild para buscar grupos también
-        		List<User> lu = userdb.findUserByWildCar(searchChat);
+        		List<User> lu = userdb.findUserByWildCar(searchChats);
         		System.out.println("Encontrados "+lu.size()+" usuarios/grupos: " + lu.toString());
         		JsonArray jarr = new JsonArray();
         		int min = (maxNumber<lu.size()? maxNumber: lu.size());
