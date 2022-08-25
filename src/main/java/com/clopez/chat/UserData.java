@@ -3,6 +3,7 @@ package com.clopez.chat;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -12,7 +13,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.clopez.chat.datamgnt.Group;
+import com.clopez.chat.datamgnt.GroupDatabase;
 import com.clopez.chat.datamgnt.User;
+import com.clopez.chat.datamgnt.User.Chat;
 import com.clopez.chat.datamgnt.UserDatabase;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -22,8 +26,10 @@ import com.google.gson.reflect.TypeToken;
 @WebServlet("/Userdata")
 public class UserData extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	private static Type type = new TypeToken<HashMap<String, User>>() {}.getType();
-    private static UserDatabase userdb = new UserDatabase("usersdb", type);
+	private static Type typeUser = new TypeToken<HashMap<String, User>>() {}.getType();
+    private static UserDatabase userdb = new UserDatabase("usersdb", typeUser);
+	private static Type typeGroup = new TypeToken<HashMap<String, Group>>() {}.getType();
+    private static GroupDatabase groupdb = new GroupDatabase("groupsdb", typeGroup);
        
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String userid = req.getParameter("id");
@@ -43,24 +49,44 @@ public class UserData extends HttpServlet {
         		if (maxNumber > 25)
         			maxNumber = 25;
         	} catch (NumberFormatException e) {
-        		System.out.println("Parámetro inválido o no especificado");
+        		System.out.println("Parámetro inválido o no especificado. Se decuelven " + maxNumber + " resultados");
         	}
         	
         	if (command.equals("lastChats")) {
         		JsonArray jarr = new JsonArray();
-        		String [] temp = user.getRecentChats();
+        		Chat [] temp = user.getRecentChats();
         		int min = (maxNumber<temp.length? maxNumber: temp.length);
-        		for (int i=0; i<min; i++)
-        			jarr.add(temp[i]);
+        		for (int i=0; i<min; i++) {
+        			JsonObject j = new JsonObject();
+        			j.addProperty("name", temp[i].getName());
+        			j.addProperty("isUser", temp[i].getIsUser());
+        			jarr.add(j);
+        		}
         		job.add("chatList", jarr);
         	} else if (command.equals("searchChats") && searchChats!= null && ! searchChats.equals("")) {
-        		//OJO... rebuild para buscar grupos también
-        		List<User> lu = userdb.findUserByWildCar(searchChats);
-        		System.out.println("Encontrados "+lu.size()+" usuarios/grupos: " + lu.toString());
+        		JsonArray jar = new JsonArray();
+        		
+        		userdb.findUserByWildCar(searchChats).forEach((temp) -> {
+        			JsonObject chat = new JsonObject();
+        			chat.addProperty("name", temp.getName());
+        			chat.addProperty("type", "user");
+        			chat.addProperty("connected", false);
+        			jar.add(chat);
+        		});
+        		groupdb.findGroupByWildChar(searchChats).forEach((temp) -> {
+        			JsonObject chat = new JsonObject();
+        			chat.addProperty("name", temp.getName());
+        			chat.addProperty("type", "group");
+        			chat.addProperty("connected", false);
+        			jar.add(chat);
+        		});
+        		
+        		System.out.println("Encontrados " + jar.size()+" usuarios/grupos: " + jar.toString());
+        		
+        		int min = (maxNumber<jar.size()? maxNumber : jar.size());
         		JsonArray jarr = new JsonArray();
-        		int min = (maxNumber<lu.size()? maxNumber: lu.size());
         		for (int i=0; i<min; i++)
-        			jarr.add(lu.get(i).getName());
+        			jarr.add(jar.get(i));
         		job.add("chatList", jarr);
         	} else if (command.equals("searchUsers") && searchUsers!= null && ! searchUsers.equals("")) {
         		List<User> lu = userdb.findUserByWildCar(searchUsers);
@@ -70,6 +96,7 @@ public class UserData extends HttpServlet {
         		for (int i=0; i<min; i++)
         			jarr.add(lu.get(i).getName());
         		job.add("chatList", jarr);
+        	} else {
         		job.addProperty("code", "Invalid command");
         	}
         } else {

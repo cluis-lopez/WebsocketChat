@@ -29,14 +29,13 @@ public class Register extends HttpServlet {
         response.put("code", "OK");
         response.put("user", "");
         response.put("id", "");
-        response.put("token", "");
 
         String user = req.getParameter("user");
         String password = req.getParameter("password");
 
         User u = db.findUserByName(user);
         if (u == null && isValidPassword(password)){
-            //El usuario no existe y la password es válida
+            //El usuario NO existe y la password es válida
             u = new User(user, password);
             try {
             	db.createUser(u);
@@ -50,6 +49,39 @@ public class Register extends HttpServlet {
             response.put("code", "Invalid User or Password");
         }
 
+        resp.setContentType("application/json");
+        PrintWriter pw = resp.getWriter();
+        pw.println(gs.toJson(response));
+        pw.close();
+    }
+    
+    public void doDelete (HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        Map<String, String> response = new HashMap<>();
+        response.put("code", "OK");
+        response.put("user", "");
+        response.put("id", "");
+
+        String user = req.getParameter("user");
+        String token = req.getParameter("token");
+        System.out.println("Parametros: " + user + "; " + token);
+
+        User u = db.findUserByName(user);
+        System.out.println("BBDD: " + u.getToken() + " ; " + u.isTokenValid() + " ; " + u.getToken());
+        
+        if (u != null && u.isTokenValid() && u.getToken().equals(token)) {
+            //El usuario  existe y el token es válido
+            try {
+            	response.put("user", u.getName());
+                response.put("id", u.getId());
+                db.deleteUser(u);
+            } catch (IllegalArgumentException e) {
+            	response.put("code", e.getMessage());
+            }
+
+        } else {
+            response.put("code", "Invalid User or Password");
+        }
+        
         resp.setContentType("application/json");
         PrintWriter pw = resp.getWriter();
         pw.println(gs.toJson(response));

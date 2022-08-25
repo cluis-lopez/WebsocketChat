@@ -69,11 +69,11 @@ public class GDatabaseTest {
 
 	@Test
 	public void Users() {
-		g1.addMember(u2);
-		g1.addMember(u3);
+		gdb.addMember(g1.getId(), u2);
+		gdb.addMember(g1.getId(), u3);
 		assertEquals("El grupo " + g1.getName() + " tiene 3 usuarios", (gdb.findById(g1.getId())).getNumMembers(), 3);
 		assertEquals("El grupo " + g2.getName() + " tiene 1 usuario", (gdb.findById(g2.getId())).getNumMembers(), 1);
-		g1.removeMember(u3);
+		gdb.removeMember(g1.getId(), u3);
 		assertEquals("El grupo " + g1.getName() + " tiene 3 usuarios", (gdb.findById(g1.getId())).getNumMembers(), 2);
 	}
 

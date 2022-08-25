@@ -5,8 +5,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 public class User {
@@ -15,16 +13,18 @@ public class User {
     private String password;
     private String token;
     private Date token_valid_upTo;
-    private String[] recentChats;
+    private Chat[] recentChats;
     private static int numChats = 5;
     private int updates;
-    private static int maxUpdates = 10;
+    private static int maxUpdates = 5;
 
-    public User(String name, String password) throws IllegalArgumentException {
+    public User(String name, String password) {
         this.name = name;
         this.id = UUID.randomUUID().toString();
-        this.recentChats = new String[numChats];
-        Arrays.fill(recentChats, "");
+        this.recentChats = new Chat[numChats];
+        //Arrays.fill(recentChats, "");
+        for(int i=0; i<recentChats.length; i++)
+        	recentChats[i] = new Chat("", false);
         if (! isPasswordValid(password))
             throw new IllegalArgumentException("Invalid Password");
         else 
@@ -46,12 +46,16 @@ public class User {
         return token;
     }
     
-    public String[] getRecentChats() {
+    public Chat[] getRecentChats() {
     	return recentChats;
     }
 
     public Date getTokenValidUpTo(){
         return token_valid_upTo;
+    }
+    
+    public int getUpdates() {
+    	return updates;
     }
 
     public boolean isTokenValid(){
@@ -76,13 +80,16 @@ public class User {
             return false;
     }
     
-    public void updateRecent(String chatName) {
-    	if (! chatName.equals(recentChats[0])) {
-    		String[] temp = new String[numChats];
-    		Arrays.fill(temp, "");
-    		temp[0] = chatName;
+    public void updateRecent(String chatName, boolean isUser) {
+    	if (! chatName.equals(recentChats[0].name)) {
+    		Chat[] temp = new Chat[numChats];
+    		//Arrays.fill(temp, "");
+            for(int i=0; i<recentChats.length; i++)
+            	temp[i] = new Chat("", false);
+    		temp[0].name = chatName;
+    		temp[0].isUser = isUser;
     		for (int i=0; i<recentChats.length-1; i++) {
-    			if (recentChats[i].equals(chatName))
+    			if (recentChats[i].name.equals(chatName))
     				continue;
     			temp[i+1] = recentChats[i];
     		}
@@ -123,5 +130,23 @@ public class User {
             hexString.append(Integer.toHexString(0xff & temp[i]));
         }
         return hexString.toString();
+    }
+    
+    public class Chat{
+    	String name;
+    	boolean isUser;
+    	
+    	protected Chat(String name, boolean isUser) {
+    		this.name = name;
+    		this.isUser = isUser;
+    	}
+    	
+    	public String getName() {
+    		return this.name;
+    	}
+    	
+    	public boolean getIsUser() {
+    		return this.isUser;
+    	}
     }
 }

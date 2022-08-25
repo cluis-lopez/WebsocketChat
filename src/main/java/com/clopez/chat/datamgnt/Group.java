@@ -55,7 +55,7 @@ public class Group {
     }
 
     protected void removeMember(User user) throws IllegalArgumentException {
-    	if (user != null && user.getName().equals("owner"))
+    	if (user != null && user.getName().equals(owner))
     		throw new IllegalArgumentException("No se puede eliminar al propietario del grupo");
         if (user != null && isMember(user))
             users.remove(user.getName());

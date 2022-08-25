@@ -16,6 +16,8 @@ import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
+import com.clopez.chat.datamgnt.Group;
+import com.clopez.chat.datamgnt.GroupDatabase;
 import com.clopez.chat.datamgnt.User;
 import com.clopez.chat.datamgnt.UserDatabase;
 import com.clopez.chat.messages.Message;
@@ -29,12 +31,14 @@ import com.google.gson.reflect.TypeToken;
 @ServerEndpoint(value = "/Server/{payload}")
 public class Server {
 	private static Type typeUser = new TypeToken<HashMap<String, User>>() {}.getType();
+	private static Type typeGroup = new TypeToken<HashMap<String, Group>>() {}.getType();
     private static Map<String, Session> sessions = new HashMap<String, Session>();
     private Map<String, String> payload;
     private Type typePayload = new TypeToken<HashMap<String, String>>() {}.getType();
     private final TypeAdapter<JsonElement> strictAdapter = new Gson().getAdapter(JsonElement.class);
     private Gson gson = new Gson();
     private static UserDatabase userdb = new UserDatabase("usersdb", typeUser);
+    private static GroupDatabase groupdb = new GroupDatabase("groupsdb", typeGroup);
     private static MessageDatabase messdb = new MessageDatabase();
     private User user;
 
@@ -110,7 +114,7 @@ public class Server {
             			response.put("status", "Cannot deliver message");
             		} else
             			response.put("status", "User not connected");
-            	user.updateRecent(payload.get("to"));
+            	user.updateRecent(payload.get("to"), false);
             	if (user.needsUpdate())
             		userdb.saveDatabase();
             	messdb.addMessage(m);
@@ -128,6 +132,13 @@ public class Server {
     
     private boolean isValidUser(String name) {
     	if (userdb.findUserByName(name) != null)
+    		return true;
+    	else
+    		return false;
+    }
+    
+    private boolean isValidGroup(String name) {
+    	if(groupdb.findGroupByName(name) != null)
     		return true;
     	else
     		return false;

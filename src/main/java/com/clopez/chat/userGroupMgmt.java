@@ -83,7 +83,7 @@ public class userGroupMgmt extends HttpServlet {
 		} else if (! g.getOwner().equals(owner.getName())) {
 			job.addProperty("code", "You're not the owner of this group");
 		} else {
-			groupdb.addmember(g.getId(), userToAdd);
+			groupdb.addMember(g.getId(), userToAdd);
 			job.addProperty("code",  "OK");
 			job.addProperty("user", userToAdd.getName());
 			job.addProperty("group", g.getName());

@@ -53,15 +53,15 @@ public class UDatabaseTest {
     
     @Test
     public void TestRecentChats() {
-    	u1.updateRecent(u2.getName());
-    	assertEquals("Ultima chat es u2 ", db.findById(u1.getId()).getRecentChats()[0], u2.getName());
-    	u1.updateRecent(u3.getName());
-    	assertEquals("Ultima chat es u3 ", db.findById(u1.getId()).getRecentChats()[0], u3.getName());
-    	for (int i=0; i<30; i++)
-    		u1.updateRecent("invalido");
-    	u1.updateRecent(u3.getName());
-    	assertEquals("Ultima chat es u3 ", db.findById(u1.getId()).getRecentChats()[0], u3.getName());
-    	assertEquals("El penultimo es invalido ", db.findById(u1.getId()).getRecentChats()[1], "invalido");
+    	u1.updateRecent(u2.getName(), true);
+    	assertEquals("Ultimo chat es u2 ", db.findById(u1.getId()).getRecentChats()[0].getName(), u2.getName());
+    	u1.updateRecent(u3.getName(), true);
+    	assertEquals("Ultimo chat es u3 ", db.findById(u1.getId()).getRecentChats()[0].getName(), u3.getName());
+    	for (int i=0; i<5; i++)
+    		u1.updateRecent("invalido", false);
+    	u1.updateRecent(u3.getName(), true);
+    	assertEquals("Ultima chat es u3 ", db.findById(u1.getId()).getRecentChats()[0].getName(), u3.getName());
+    	assertEquals("El penultimo es invalido ", db.findById(u1.getId()).getRecentChats()[1].getName(), "invalido");
     }
 
     @Test

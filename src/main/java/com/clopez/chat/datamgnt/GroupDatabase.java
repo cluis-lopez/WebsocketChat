@@ -21,7 +21,7 @@ public class GroupDatabase extends SimpleJsonDatabase<Group>{
 		deleteItem(g.getId());
 	}
 	
-	public boolean addmember(String id, User u) {
+	public boolean addMember(String id, User u) {
 		boolean ret = false;
 		Group g = data.get(id);
 		try {
@@ -57,6 +57,17 @@ public class GroupDatabase extends SimpleJsonDatabase<Group>{
 				return g;
 		}
 		return null;
+	}
+	
+	public List<Group> findGroupByWildChar(String wc) {
+		List<Group> lg = new ArrayList<>();
+		Group g;
+		for (String id : data.keySet()) {
+			g = data.get(id);
+			if (g.getName().contains(wc))
+				lg.add(g);
+		}
+		return lg;
 	}
 	
 	public List<Group> findByOwner(User u) {
