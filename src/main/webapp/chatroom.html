@@ -47,7 +47,8 @@
             					location.href = "login.html";
         					var user = JSON.parse(credentials);
         					var chatTo = new URL(document.URL).searchParams.get('chatTo');
-        					console.log("chateando con: " + chatTo);
+        					var typeChat = new URL(document.URL).searchParams.get('typeChat');
+        					console.log("chateando con: " + chatTo + "(" + typeChat + ")");
         					if (chatTo == null || chatTo == "" || chatTo == user.user)
         						location.href = "chatlist.html";
         					const weekdays = ["Domingo", "Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado"];

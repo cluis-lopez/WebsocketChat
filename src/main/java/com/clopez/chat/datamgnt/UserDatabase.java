@@ -34,7 +34,7 @@ public class UserDatabase extends SimpleJsonDatabase<User> {
     	User u;
     	for (String id : data.keySet()) {
     		u = data.get(id);
-    		if (u.getName().contains(wc))
+    		if (u.getName().toLowerCase().contains(wc))
     			lu.add(u);
     	}
     	return lu;

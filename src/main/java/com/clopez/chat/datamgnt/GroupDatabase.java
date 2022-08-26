@@ -64,7 +64,7 @@ public class GroupDatabase extends SimpleJsonDatabase<Group>{
 		Group g;
 		for (String id : data.keySet()) {
 			g = data.get(id);
-			if (g.getName().contains(wc))
+			if (g.getName().toLowerCase().contains(wc))
 				lg.add(g);
 		}
 		return lg;

@@ -24,7 +24,7 @@
 							<h1 class="fs-4 card-title fw-bold mb-4">Chats Recientes</h1>
 						</div>
 						<div class="mb-3">
-							< <div class="col-10">
+						<div class="col-10">
 								<div class="d-flex">
 									<input type="text" class="form-control" placeholder="Busca usuarios o grupos"
 										id="searchBox">
@@ -73,6 +73,7 @@
 					location.href = "login.html";
 				var user = JSON.parse(credentials);
 				var chatTo;
+				var typeChat;
 
 				// Initialize UI variables and components
 				document.getElementById("searchButton").addEventListener("click", searchChats);
@@ -130,12 +131,33 @@
 					}
 
 					for (var s in elements) {
-						if (elements[s] == "")
+						if (elements[s].name == "")
 							continue;
 						var l = document.createElement("li");
-						l.setAttribute("id", "element_" + elements[s]);
-						l.classList.add("list-group-item");
-						l.appendChild(document.createTextNode(elements[s]));
+						l.setAttribute("id", "element_" + elements[s].name);
+						l.classList.add("list-group-item")
+						l.classList.add("d-flex");
+						l.classList.add("bd-highlight");
+						l.classList.add("mb-3");
+						var text = document.createElement("span");
+						text.classList.add("me-auto");
+						text.classList.add("p-2");
+						text.classList.add("bd-highlight");
+						text.innerHTML = elements[s].name;
+						var isUser = document.createElement("span");
+						isUser.classList.add("badge");
+						isUser.classList.add("rounded-pill");
+						isUser.classList.add("p-2");
+						isUser.classList.add("bd-highlight");
+						if (elements[s].isUser){
+							isUser.innerHTML = "User";
+							isUser.classList.add("bg-primary");
+						} else {
+							isUser.innerHTML = "Group";
+							isUser.classList.add("bg-info");
+						}
+						l.appendChild(text);
+						l.appendChild(isUser);
 						lista.appendChild(l);
 						l.addEventListener("click", chatWith, false);
 					}
@@ -144,8 +166,9 @@
 				function chatWith(evt) {
 					console.log("Chat with " + evt.currentTarget.id);
 					chatTo = evt.currentTarget.id.slice(8);
+					typeChat = evt.target.childNodes[1].innerText;
 					console.log("chateando con: " + chatTo);
-					location.href = "chatroom.html?chatTo=" + chatTo;
+					location.href = "chatroom.html?chatTo=" + chatTo + "&typeChat=" + typeChat;
 					//Load last messages from chat if any
 				}
 			});

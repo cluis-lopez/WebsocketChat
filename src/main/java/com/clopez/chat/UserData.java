@@ -69,14 +69,14 @@ public class UserData extends HttpServlet {
         		userdb.findUserByWildCar(searchChats).forEach((temp) -> {
         			JsonObject chat = new JsonObject();
         			chat.addProperty("name", temp.getName());
-        			chat.addProperty("type", "user");
+        			chat.addProperty("isUser", true);
         			chat.addProperty("connected", false);
         			jar.add(chat);
         		});
         		groupdb.findGroupByWildChar(searchChats).forEach((temp) -> {
         			JsonObject chat = new JsonObject();
         			chat.addProperty("name", temp.getName());
-        			chat.addProperty("type", "group");
+        			chat.addProperty("isUser", false);
         			chat.addProperty("connected", false);
         			jar.add(chat);
         		});
