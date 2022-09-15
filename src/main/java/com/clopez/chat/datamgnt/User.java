@@ -14,6 +14,7 @@ public class User {
     private String token;
     private Date token_valid_upTo;
     private Chat[] recentChats;
+    private boolean isConnected;
     private static int numChats = 5;
     private int updates;
     private static int maxUpdates = 5;
@@ -31,6 +32,7 @@ public class User {
             this.password = encryptPassword(password);;
 
         generateToken(30);
+        this.isConnected = false;
         this.updates = 0;
     }
 
@@ -57,8 +59,16 @@ public class User {
     public int getUpdates() {
     	return updates;
     }
+    
+    public boolean isConnected() {
+		return isConnected;
+	}
 
-    public boolean isTokenValid(){
+	public void setConnected(boolean isConnected) {
+		this.isConnected = isConnected;
+	}
+
+	public boolean isTokenValid(){
         if (token_valid_upTo.compareTo(new Date()) > 0)
             return true;
         else

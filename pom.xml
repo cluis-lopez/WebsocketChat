@@ -76,7 +76,7 @@
           <artifactId>tomcat7-maven-plugin</artifactId>
           <version>2.2</version>
           <configuration>
-            <url>http://192.168.1.11:8080/manager/text</url>
+            <url>http://192.168.4.11:8080/manager/text</url>
             <server>TomcatServer</server>
             <path>/ChatServer</path>
           </configuration>

@@ -11,7 +11,7 @@
 					</div>
 
 					<div class="mb-3">
-						<label class="mb-2 text-muted" for="owner">Usuarios</label>
+						<label class="mb-2 text-muted" for="userList">Usuarios</label>
 						<div class="d-flex">
 							<select class="form-select" aria-label="Selecciona un usuario" id="userList">
 								<option selected>Selecciona un usuario del Grupo</option>
@@ -24,16 +24,14 @@
 					<div class="mb-3">
 						<div class="row height d-flex justify-content-center align-items-center">
 							<div class="col-12">
-								<label class="mb-2 text-muted" for="pwner">A&ntilde;adir Usuario</label>
+								<label class="mb-2 text-muted" for="searchBox">A&ntilde;adir Usuario</label>
 								<div class="d-flex">
-									<input type="text" class="form-control" placeholder="Busca usuarios" id="searchBox">
+									<input class="form-control" list="totalUserList" id="searchBox" placeholder="Buscar usuarios...">
+									<datalist id="totalUserList">
+									</datalist>
 									<button class="btn btn-primary" id="searchButton">Search</button>
 									<button id="add" class="btn btn-primary ms-auto">A&ntilde;adir</button>
 								</div>
-							</div>
-							<div class="col-12">
-								<ul class="list-group" id="userList">
-								</ul>
 							</div>
 						</div>
 					</div>

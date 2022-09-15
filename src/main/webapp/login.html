@@ -108,7 +108,7 @@
 									if (resp.code == "OK") {
 										window.localStorage.setItem("credentials",
 												JSON.stringify(resp));
-										location.href = "chatlist.html";
+										location.href = "Main/main.html";
 									} else {
 										console.log(resp.code);
 										document.getElementById("warningtext").innerHTML = resp.code;

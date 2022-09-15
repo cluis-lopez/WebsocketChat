@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 public class Group {
@@ -46,12 +47,17 @@ public class Group {
     }
 
     protected void addMember(User user) throws IllegalArgumentException {
-    	Type type = new TypeToken<HashMap<String, User>>() {}.getType();
-    	UserDatabase db = new UserDatabase("usersdb", type);
-        if (user != null && db.findUserByName(user.getName()) != null)
+    	Gson gson = new Gson();
+    	DatabaseHook udb = new DatabaseHook("UserDatabase");
+    	try {
+    		User u = gson.fromJson(udb.request("findUserByName", user.getName()), User.class);
+    		if (user != null && u != null)
             users.add(user.getName());
         else
             throw new IllegalArgumentException("Invalid user");
+    	} catch (DatabaseHookException e) {
+    		throw new IllegalArgumentException ("Invalid Databse Operation " + e.getMessage());
+    	}
     }
 
     protected void removeMember(User user) throws IllegalArgumentException {
