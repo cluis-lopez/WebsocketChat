@@ -15,6 +15,7 @@ import com.clopez.chat.datamgnt.Group;
 import com.clopez.chat.datamgnt.User;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
@@ -94,8 +95,9 @@ public class userGroupMgmt extends HttpServlet {
 			try {
 				JsonObject jo = new JsonObject();
 				jo.addProperty("id", g.getId());
-				jo.addProperty("user", gson.toJson(userToAdd));
-				jo = gdb.request("addMember", jo.getAsString());
+				JsonElement je = gson.toJsonTree(userToAdd);	
+				jo.add("user", je);
+				jo = gdb.request("addMember", gson.toJson(jo));
 				if (jo.get("code").getAsString().equals("OK")) {
 					job.addProperty("code", "OK");
 					job.addProperty("user", userToAdd.getName());
@@ -143,9 +145,12 @@ public class userGroupMgmt extends HttpServlet {
 			try {
 				JsonObject jo = new JsonObject();
 				jo.addProperty("id", g.getId());
-				jo.addProperty("user", gson.toJson(userToDelete));
-				jo = gdb.request("removeMember", jo.getAsString());
+				JsonElement je = gson.toJsonTree(userToDelete);
+				jo.add("user", je);
+				jo = gdb.request("removeMember", gson.toJson(jo));
 				job.addProperty("code", jo.get("code").getAsString());
+				job.addProperty("user", userToDelete.getName());
+				job.addProperty("group", g.getName());
 			} catch (DatabaseHookException e) {
 				job.addProperty("code", "Failed Database Operation " + e.getMessage());
 			} catch (JsonSyntaxException e) {
@@ -166,6 +171,7 @@ public class userGroupMgmt extends HttpServlet {
 
 	private boolean isValidParamenters(HttpServletRequest req, String... pars) {
 		for (String s : pars) {
+			System.out.println("Parametro :" + s + " valor : " + req.getParameter(s));
 			if (req.getParameter(s) == null || req.getParameter(s).equals(""))
 				return false;
 		}
@@ -192,7 +198,7 @@ public class userGroupMgmt extends HttpServlet {
 		Group g = null;
 		try {
 			JsonObject jo = gdb.request("findGroupByName", groupName);
-			g = gson.fromJson(jo, Group.class);
+			g = gson.fromJson(jo.get("group"), Group.class);
 		} catch (DatabaseHookException | JsonSyntaxException | NullPointerException e) {
 			g = null;
 		}
@@ -205,11 +211,10 @@ public class userGroupMgmt extends HttpServlet {
 		User u = null;
 		try {
 			JsonObject jo = udb.request("findUserByName", userName);
-			u = gson.fromJson(jo, User.class);
+			u = gson.fromJson(jo.get("user"), User.class);
 		} catch (DatabaseHookException | JsonSyntaxException | NullPointerException e) {
 			u = null;
 		}
-
 		return u;
 	}
 }

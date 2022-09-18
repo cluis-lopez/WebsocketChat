@@ -142,6 +142,15 @@ public class User {
         return hexString.toString();
     }
     
+    @Override
+    public String toString() {
+    	String ret = "Nombre :" + this.name;
+    	ret += "Id : " + this.id;
+    	ret += "Token : " + this.token;
+        ret += "Token valida hasta: " + this.token_valid_upTo;
+    	return ret;
+    }
+    
     public class Chat{
     	String name;
     	boolean isUser;
