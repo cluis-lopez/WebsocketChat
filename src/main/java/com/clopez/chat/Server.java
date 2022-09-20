@@ -60,7 +60,7 @@ public class Server {
 		try {
 			JsonObject jo = userdb.request("findById", payload.get("id"));
 			u = gson.fromJson(jo, User.class);
-			if (u != null && payload.get("token").equals(u.getToken()))
+			if (u == null || ! payload.get("token").equals(u.getToken()))
 				throw new DatabaseHookException ("Invalid credentials");
 		} catch (DatabaseHookException | JsonSyntaxException e) {
 			System.err.println(e.getMessage());
@@ -208,9 +208,14 @@ public class Server {
 
 	private boolean isValidPayload(String json) {
 		if (json != null && isValidJson(json)) {
-			payload = gson.fromJson(json, typePayload);
-			if (payload.get("id") != null && payload.get("id") != "")
-				return true;
+			try {
+				payload = gson.fromJson(json, typePayload);
+				if (payload.get("id") != null && payload.get("id") != "")
+					return true;
+			} catch (JsonSyntaxException e) {
+				System.err.println("Malformed JSON payload " + e.getMessage());
+				return false;
+			}
 		}
 		return false;
 	}

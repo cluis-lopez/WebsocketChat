@@ -24,7 +24,7 @@ function loadChatRoom() {
 			mainChat.style.marginBottom = document.getElementById("bottomnavbar").offsetHeight + 'px';
 
 			//Initialize the Websocket client
-			var websocket = new WebSocket(location.host + "/ChatServer/Server/{" + user + "}");
+			var websocket = new WebSocket("ws://" + location.host + "/ChatServer/Server/{" + JSON.stringify(user) + "}");
 			websocket.onopen = function() { wsOpen(); };
 			websocket.onmessage = function(message) { wsGetMessage(message); };
 			websocket.onclose = function(message) { wsCloseConnection(message); };
