@@ -1,4 +1,4 @@
-package com.clopez.chat.datamgnt;
+package com.clopez.datamgnt;
 
 import java.lang.reflect.Type;
 import java.util.Date;

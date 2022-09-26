@@ -1,4 +1,4 @@
-package com.clopez.chat.datamgnt;
+package com.clopez.datamgnt;
 
 public class DatabaseHookException extends Exception {
 	public DatabaseHookException(String message) {

@@ -1,4 +1,4 @@
-package com.clopez.chat.datamgnt;
+package com.clopez.datamgnt;
 
 import com.google.gson.Gson;
 

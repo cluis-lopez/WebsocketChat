@@ -1,4 +1,4 @@
-package com.clopez.chat.datamgnt;
+package com.clopez.datamgnt;
 
 import java.time.Instant;
 import java.util.Map;

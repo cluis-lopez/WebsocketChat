@@ -1,4 +1,4 @@
-package com.clopez.chat.datamgnt;
+package com.clopez.datamgnt;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

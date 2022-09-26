@@ -9,10 +9,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.clopez.chat.datamgnt.DatabaseHook;
-import com.clopez.chat.datamgnt.DatabaseHookException;
-import com.clopez.chat.datamgnt.Group;
-import com.clopez.chat.datamgnt.User;
+import com.clopez.datamgnt.DatabaseHook;
+import com.clopez.datamgnt.DatabaseHookException;
+import com.clopez.datamgnt.Group;
+import com.clopez.datamgnt.User;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

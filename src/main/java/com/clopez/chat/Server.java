@@ -6,7 +6,6 @@ import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
@@ -16,11 +15,11 @@ import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
-import com.clopez.chat.datamgnt.DatabaseHook;
-import com.clopez.chat.datamgnt.DatabaseHookException;
-import com.clopez.chat.datamgnt.Group;
-import com.clopez.chat.datamgnt.Message;
-import com.clopez.chat.datamgnt.User;
+import com.clopez.datamgnt.DatabaseHook;
+import com.clopez.datamgnt.DatabaseHookException;
+import com.clopez.datamgnt.Group;
+import com.clopez.datamgnt.Message;
+import com.clopez.datamgnt.User;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -58,8 +57,10 @@ public class Server {
 		payload = gson.fromJson(pl, typePayload);
 		User u = null;
 		try {
+			System.out.println("Voy a buscar a " + payload.get("user") + " con id " + payload.get("id"));
 			JsonObject jo = userdb.request("findById", payload.get("id"));
 			u = gson.fromJson(jo, User.class);
+			System.err.println("Econtradio usuario " + u);
 			if (u == null || ! payload.get("token").equals(u.getToken()))
 				throw new DatabaseHookException ("Invalid credentials");
 		} catch (DatabaseHookException | JsonSyntaxException e) {
@@ -225,6 +226,7 @@ public class Server {
 		if (json != null && isValidJson(json)) {
 			payload = gson.fromJson(json, typePayload);
 			String from = payload.get("from");
+			System.err.println("From : " + from);
 			if (from != null && !from.equals("") && from.equals(user.getName()) && payload.get("type") != null
 					&& payload.get("createdAt") != null) {
 				try {
