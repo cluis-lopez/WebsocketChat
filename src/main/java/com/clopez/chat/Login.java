@@ -41,6 +41,11 @@ public class Login extends HttpServlet {
 				if (u.passwordMatch(password)) {
 					response.put("user", u.getName());
 					response.put("id", u.getId());
+					if ( ! u.isTokenValid()) { //Token Expired, regenerate
+						System.out.println("Updating user data for : " + u.getName());
+						u.generateToken(30);
+						udb.request("updateUser", gson.toJson(u));
+					}
 					response.put("token", u.getToken());
 				} else {
 					response.put("code", "Invalid Password");
@@ -56,6 +61,8 @@ public class Login extends HttpServlet {
 			response.put("code", "Null Pointer... ¿Invalid parameters?");
 		}
 
+		// Renew token life
+		
 		System.out.println("Respuesta login:  " + gson.toJson(response));
 		resp.setContentType("application/json;charset=UTF-8");
 		resp.setHeader("cache-control", "no-cache");

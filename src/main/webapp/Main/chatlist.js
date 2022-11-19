@@ -22,7 +22,7 @@ function loadChatList() {
 						recreateList(chats);
 					} else {
 						console.log(resp.code);
-						location.href = "login.html";
+						location.href = "../login.html";
 					}
 				}
 			};

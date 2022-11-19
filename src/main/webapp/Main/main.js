@@ -6,6 +6,7 @@ window.addEventListener(
 		if (credentials == null)
 			location.href = "../login.html";
 		window.credentials = JSON.parse(credentials);
+		console.log("Login success:" + credentials);
 		window.chatTo = '';
 		window.typeChat = '';
 

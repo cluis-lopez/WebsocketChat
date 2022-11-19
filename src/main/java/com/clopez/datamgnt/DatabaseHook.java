@@ -103,7 +103,8 @@ public class DatabaseHook {
 			if (response.statusCode() == 200) {
 				jo = new JsonParser().parse(response.body()).getAsJsonObject();
 			} else {
-				jo.addProperty("code", "Failed Operation");
+				JsonObject jo2 = new JsonParser().parse(response.body()).getAsJsonObject();
+				jo.addProperty("code", "Failed Operation. Database returns :" + jo2.get("code").getAsString());
 			}
 				
 		} catch (IOException | InterruptedException e) {

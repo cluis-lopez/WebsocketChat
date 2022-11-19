@@ -58,8 +58,12 @@ public class Server {
 		User u = null;
 		try {
 			System.out.println("Voy a buscar a " + payload.get("user") + " con id " + payload.get("id"));
-			JsonObject jo = userdb.request("findById", payload.get("id"));
-			u = gson.fromJson(jo, User.class);
+			JsonObject jo = userdb.request("findUserById", payload.get("id"));
+			System.out.println("Devuelto BBDD: " + jo.get("code"));
+			System.out.println("Devuelto2 BBDD " + jo.get("user"));
+			if (! jo.get("code").getAsString().equals("OK"))
+				throw new DatabaseHookException ("Database error: " + jo.get("code").getAsString());
+			u = gson.fromJson(jo.get("user"), User.class);
 			System.err.println("Econtradio usuario " + u);
 			if (u == null || ! payload.get("token").equals(u.getToken()))
 				throw new DatabaseHookException ("Invalid credentials");
