@@ -93,7 +93,7 @@ public class Message {
 		this.stored = stored;
 	}
 	
-	public int generateChatId(String from, String to) {
+	public static int generateChatId(String from, String to) {
 		String temp;
 		if (from.compareTo(to) <= 0)
 			temp = from + to;

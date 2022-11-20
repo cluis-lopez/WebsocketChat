@@ -44,7 +44,7 @@ public class Server {
 	@OnOpen
 	public void onOpen(Session session, @PathParam("payload") String pl) {
 		System.out.println("Open Connection ..." + session.getId() + " Credentials: " + pl);
-		if (! isValidPayload(pl)) {
+		if (!isValidPayload(pl)) {
 			System.err.println("Parámetros inválidos " + pl);
 			try {
 				session.close();
@@ -53,7 +53,7 @@ public class Server {
 			}
 			return;
 		}
-			
+
 		payload = gson.fromJson(pl, typePayload);
 		User u = null;
 		try {
@@ -61,37 +61,37 @@ public class Server {
 			JsonObject jo = userdb.request("findUserById", payload.get("id"));
 			System.out.println("Devuelto BBDD: " + jo.get("code"));
 			System.out.println("Devuelto2 BBDD " + jo.get("user"));
-			if (! jo.get("code").getAsString().equals("OK"))
-				throw new DatabaseHookException ("Database error: " + jo.get("code").getAsString());
+			if (!jo.get("code").getAsString().equals("OK"))
+				throw new DatabaseHookException("Database error: " + jo.get("code").getAsString());
 			u = gson.fromJson(jo.get("user"), User.class);
 			System.err.println("Econtradio usuario " + u);
-			if (u == null || ! payload.get("token").equals(u.getToken()))
-				throw new DatabaseHookException ("Invalid credentials");
+			if (u == null || !payload.get("token").equals(u.getToken()))
+				throw new DatabaseHookException("Invalid credentials");
 		} catch (DatabaseHookException | JsonSyntaxException e) {
 			System.err.println(e.getMessage());
 			e.printStackTrace();
 			return;
-		}		
-		
+		}
+
 		// Usuario Válido
 		sessions.put(u.getName(), session);
 		this.user = u;
 		u.setConnected(true);
 		System.out.println("Usuario " + u.getName() + " Conectado");
 		System.out.println("En el sistema hay " + sessions.size() + " usuarios conectados");
-		
+
 		try {
 			JsonObject jo = messdb.request("getPendingMessagesTo", u.getName());
 			JsonArray ja = jo.get("messages").getAsJsonArray();
 			if (ja.size() > 0) {
-			System.out.println("El usuario " + u.getName() + " tiene " + ja.size() + " mensajes pendientes");
-			for (JsonElement je : ja) {
-				Message m = gson.fromJson(je, Message.class);
-				if (messageSend(session, m))
-					System.err.println("Despachado mensaje " + m.getId());
-				else
-					System.err.println("Fallo al enviar mensaje pendiente");
-			}
+				System.out.println("El usuario " + u.getName() + " tiene " + ja.size() + " mensajes pendientes");
+				for (JsonElement je : ja) {
+					Message m = gson.fromJson(je, Message.class);
+					if (messageSend(session, m))
+						System.err.println("Despachado mensaje " + m.getId());
+					else
+						System.err.println("Fallo al enviar mensaje pendiente");
+				}
 			}
 		} catch (DatabaseHookException | JsonSyntaxException e) {
 			System.err.println("Fallo en el procesado de mensajes pendientes " + e.getMessage());
@@ -117,33 +117,51 @@ public class Server {
 		response.put("status", "");
 
 		Message m;
+
 		if ((m = isValidMessage(pl)) == null) {
 			response.put("code", "Invalid Message");
-		} else {
-			if (!isValidUser(payload.get("to"))) { // Usuario no registrado
-				response.put("code", "Invalid user");
+			return gson.toJson(response);
+		}
+		
+		User u;
+		Group g;
+
+		if ((u = isValidUser(payload.get("to"))) != null) { // Usuario registrado
+			Session sid = isConnectedUser(u.getName());
+			if (sid != null) { // Usuario conectado
+				if (messageSend(sid, m))
+					response.put("id", payload.get("id"));
+				else {
+					response.put("code", "Cannot deliver Message");
+					response.put("status", "Cannot deliver message");
+				}
 			} else {
-				Session sid = isConnectedUser(payload.get("to"));
-				if (sid != null) { // Usuario conectado
+				response.put("status", "User not connected");
+			}
+		} else if ((g = isValidGroup(payload.get("to"))) != null){ // Grupo resgistrado
+			for (String s : g.getUsers()) {
+				Session sid = (isConnectedUser(s));
+				if (sid != null) // Usuario conectado
 					if (messageSend(sid, m))
 						response.put("id", payload.get("id"));
 					else {
 						response.put("code", "Cannot deliver Message");
 						response.put("status", "Cannot deliver message");
 					}
-				} else {
-					response.put("status", "User not connected");
-				}
-				user.updateRecent(payload.get("to"), false);
-				try {
-					messdb.request("addMessage", gson.toJson(m));
-					if (user.needsUpdate())
-						userdb.request("saveDatabase", " ");
-					response.put("code", "OK");
-				} catch (DatabaseHookException | JsonSyntaxException e) {
-					response.put("code", "addMessage or Save UserDatabase" + e.getMessage());
-				}
 			}
+		} else {
+			response.put("code", "Invalid destination");
+			return gson.toJson(response);
+		}
+
+		user.updateRecent(payload.get("to"), false);
+		try {
+			messdb.request("addMessage", gson.toJson(m));
+			if (user.needsUpdate())
+				userdb.request("updateUser", gson.toJson(user));
+			response.put("code", "OK");
+		} catch (DatabaseHookException | JsonSyntaxException e) {
+			response.put("code", "addMessage or updateUser" + e.getMessage());
 		}
 
 		System.out.println("Devuelto al remitente : " + gson.toJson(response));
@@ -169,35 +187,29 @@ public class Server {
 		return ret;
 	}
 
-	private boolean isValidUser(String name) {
+	private User isValidUser(String name) {
 		Gson gson = new Gson();
-		User u = null;
-		boolean ret = false;
+		User u, ret = null;
 		try {
 			JsonObject jo = userdb.request("findUserByName", name);
 			u = gson.fromJson(jo, User.class);
 			if (jo.get("code").getAsString().equals("OK") && u != null)
-				ret = true;
+				ret = u;
 		} catch (DatabaseHookException | JsonSyntaxException e) {
-			ret = false;
 		}
-
 		return ret;
 	}
 
-	private boolean isValidGroup(String name) {
+	private Group isValidGroup(String name) {
 		Gson gson = new Gson();
-		Group g = null;
-		boolean ret = false;
+		Group g, ret = null;
 		try {
 			JsonObject jo = groupdb.request("findGroupByName", name);
 			g = gson.fromJson(jo, Group.class);
 			if (jo.get("code").getAsString().equals("OK") && g != null)
-				ret = true;
+				ret = g;
 		} catch (DatabaseHookException | JsonSyntaxException | NullPointerException e) {
-			ret = false;
 		}
-
 		return ret;
 	}
 
