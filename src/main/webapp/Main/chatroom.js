@@ -94,7 +94,7 @@ function loadChatRoom() {
 				} else if (message.type == "CONTROL") {
 					if (message.code == "OK") {
 						var el = document.getElementById(message.id);
-						el.innerText = "Recibido";
+						el.innerText = "Enviado";
 						if (message.status == "User not connected")
 							document.getElementById("chatWith").style.color = "red";
 					} else {

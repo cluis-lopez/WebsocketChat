@@ -115,23 +115,24 @@ public class Server {
 		response.put("type", "CONTROL");
 		response.put("code", "OK");
 		response.put("status", "");
-
+		
 		Message m;
-
+		
 		if ((m = isValidMessage(pl)) == null) {
 			response.put("code", "Invalid Message");
 			return gson.toJson(response);
 		}
-		
+
+		payload = gson.fromJson(pl, typePayload);
 		User u;
 		Group g;
+		
+		response.put("id", payload.get("id"));
 
 		if ((u = isValidUser(payload.get("to"))) != null) { // Usuario registrado
 			Session sid = isConnectedUser(u.getName());
 			if (sid != null) { // Usuario conectado
-				if (messageSend(sid, m))
-					response.put("id", payload.get("id"));
-				else {
+				if ( ! messageSend(sid, m)) {
 					response.put("code", "Cannot deliver Message");
 					response.put("status", "Cannot deliver message");
 				}
@@ -142,9 +143,7 @@ public class Server {
 			for (String s : g.getUsers()) {
 				Session sid = (isConnectedUser(s));
 				if (sid != null) // Usuario conectado
-					if (messageSend(sid, m))
-						response.put("id", payload.get("id"));
-					else {
+					if (! messageSend(sid, m)) {
 						response.put("code", "Cannot deliver Message");
 						response.put("status", "Cannot deliver message");
 					}
